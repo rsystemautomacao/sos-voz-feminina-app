@@ -1,0 +1,27 @@
+{
+  "name": "SOS Voz Feminina",
+  "short_name": "SOS Voz",
+  "description": "App de denúncia anônima para proteção e apoio às mulheres",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4c0f47",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "medical", "safety"],
+  "lang": "pt-BR"
+}

@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: sos-voz-feminina-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        value: mongodb+srv://sosvozfeminina:SosVoz2024!@cluster0.wyktcyy.mongodb.net/sos-voz-feminina?retryWrites=true&w=majority&appName=Cluster0
+      - key: JWT_SECRET
+        value: sos-voz-feminina-producao-2024-super-secreto
+      - key: CORS_ORIGIN
+        value: https://sos-voz-feminina.vercel.app
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 50
+      - key: MAX_FILE_SIZE
+        value: 5242880
+      - key: ALLOWED_FILE_TYPES
+        value: image/jpeg,image/png,image/gif,audio/mpeg,audio/wav
