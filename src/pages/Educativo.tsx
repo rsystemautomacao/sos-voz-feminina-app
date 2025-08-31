@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { BookOpen, Shield, Scale, Heart, AlertTriangle, FileText } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const Educativo = () => {
+  const [activeSection, setActiveSection] = useState<string | undefined>(undefined);
+
   const educationalContent = [
     {
       id: "assedio",
@@ -145,6 +148,17 @@ const Educativo = () => {
     }
   ];
 
+  const handleCardClick = (sectionId: string) => {
+    setActiveSection(sectionId);
+    // Scroll para a seção do accordion
+    setTimeout(() => {
+      const element = document.getElementById(`accordion-${sectionId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-soft py-8 px-4">
       <div className="max-w-4xl mx-auto">
@@ -164,7 +178,10 @@ const Educativo = () => {
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Card className="text-center shadow-soft hover:shadow-strong transition-all">
+          <Card 
+            className="text-center shadow-soft hover:shadow-strong transition-all cursor-pointer hover:scale-105"
+            onClick={() => handleCardClick('direitos')}
+          >
             <CardContent className="pt-6">
               <Shield className="mx-auto mb-3 text-primary" size={32} />
               <h3 className="font-semibold mb-2">Seus Direitos</h3>
@@ -174,7 +191,10 @@ const Educativo = () => {
             </CardContent>
           </Card>
           
-          <Card className="text-center shadow-soft hover:shadow-strong transition-all">
+          <Card 
+            className="text-center shadow-soft hover:shadow-strong transition-all cursor-pointer hover:scale-105"
+            onClick={() => handleCardClick('assedio')}
+          >
             <CardContent className="pt-6">
               <AlertTriangle className="mx-auto mb-3 text-warning" size={32} />
               <h3 className="font-semibold mb-2">Como Identificar</h3>
@@ -184,7 +204,10 @@ const Educativo = () => {
             </CardContent>
           </Card>
           
-          <Card className="text-center shadow-soft hover:shadow-strong transition-all">
+          <Card 
+            className="text-center shadow-soft hover:shadow-strong transition-all cursor-pointer hover:scale-105"
+            onClick={() => handleCardClick('apoio-emocional')}
+          >
             <CardContent className="pt-6">
               <Heart className="mx-auto mb-3 text-success" size={32} />
               <h3 className="font-semibold mb-2">Apoio Emocional</h3>
@@ -196,7 +219,7 @@ const Educativo = () => {
         </div>
 
         {/* Educational Content */}
-        <Card className="shadow-strong">
+        <Card className="shadow-strong" id="accordion-section">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <FileText className="text-primary" size={24} />
@@ -207,9 +230,15 @@ const Educativo = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Accordion type="single" collapsible className="w-full">
+            <Accordion 
+              type="single" 
+              collapsible 
+              className="w-full"
+              value={activeSection}
+              onValueChange={setActiveSection}
+            >
               {educationalContent.map((item) => (
-                <AccordionItem key={item.id} value={item.id}>
+                <AccordionItem key={item.id} value={item.id} id={`accordion-${item.id}`}>
                   <AccordionTrigger className="text-left">
                     {item.title}
                   </AccordionTrigger>

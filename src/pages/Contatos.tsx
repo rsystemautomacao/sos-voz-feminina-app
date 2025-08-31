@@ -1,8 +1,15 @@
-import { Phone, MessageSquare, Globe, Heart, Scale, Users } from "lucide-react";
+import { Phone, MessageSquare, Globe, Heart, Scale, Users, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import LocationPermissionModal from "@/components/LocationPermissionModal";
+import ManualSearchModal from "@/components/ManualSearchModal";
 
 const Contatos = () => {
+  const [isRequestingLocation, setIsRequestingLocation] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showManualSearchModal, setShowManualSearchModal] = useState(false);
+
   const emergencyContacts = [
     {
       name: "Disque 180",
@@ -41,7 +48,8 @@ const Contatos = () => {
         {
           name: "Mapa da Saúde Mental",
           description: "Encontre psicólogos em sua região",
-          website: "mapadasaudemental.com.br"
+          type: "map",
+          special: true
         },
         {
           name: "Psicólogos do SUS",
@@ -100,6 +108,81 @@ const Contatos = () => {
 
   const openWebsite = (website: string) => {
     window.open(`https://${website}`, '_blank');
+  };
+
+  const handleMapButtonClick = () => {
+    setShowLocationModal(true);
+  };
+
+  const handleConfirmLocation = async () => {
+    setShowLocationModal(false);
+    setIsRequestingLocation(true);
+    
+    try {
+      // Verificar se o navegador suporta geolocalização
+      if (!navigator.geolocation) {
+        alert('Seu navegador não suporta geolocalização. Por favor, use um dispositivo móvel.');
+        setIsRequestingLocation(false);
+        return;
+      }
+
+      // Solicitar permissão de localização
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      
+      // Detectar o sistema operacional para abrir o mapa correto
+      const userAgent = navigator.userAgent.toLowerCase();
+      let mapUrl = '';
+
+      if (/iphone|ipad|ipod/.test(userAgent)) {
+        // iOS - Apple Maps
+        mapUrl = `https://maps.apple.com/?q=psicólogo&ll=${latitude},${longitude}&z=13`;
+      } else if (/android/.test(userAgent)) {
+        // Android - Google Maps
+        mapUrl = `https://www.google.com/maps/search/psicólogo/@${latitude},${longitude},13z`;
+      } else {
+        // Desktop ou outros - Google Maps
+        mapUrl = `https://www.google.com/maps/search/psicólogo/@${latitude},${longitude},13z`;
+      }
+
+      // Abrir o mapa
+      window.open(mapUrl, '_blank');
+      
+    } catch (error) {
+      console.error('Erro ao obter localização:', error);
+      
+      if (error instanceof GeolocationPositionError) {
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            alert('Permissão de localização negada. Para encontrar psicólogos próximos, permita o acesso à sua localização.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            alert('Localização indisponível. Verifique se o GPS está ativado.');
+            break;
+          case error.TIMEOUT:
+            alert('Tempo limite excedido. Tente novamente.');
+            break;
+          default:
+            alert('Erro ao obter localização. Tente novamente.');
+        }
+      } else {
+        alert('Erro inesperado. Tente novamente.');
+      }
+    } finally {
+      setIsRequestingLocation(false);
+    }
+  };
+
+  const handleDenyLocation = () => {
+    setShowLocationModal(false);
+    setShowManualSearchModal(true);
   };
 
   return (
@@ -198,6 +281,17 @@ const Contatos = () => {
                               Website
                             </Button>
                           )}
+                          {contact.special && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={handleMapButtonClick}
+                              disabled={isRequestingLocation}
+                            >
+                              <MapPin size={14} />
+                              {isRequestingLocation ? 'Carregando...' : 'Buscar Próximos'}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -227,7 +321,41 @@ const Contatos = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Location Permission Notice */}
+        <Card className="mt-4 border-info/20 bg-info/5">
+          <CardContent className="pt-6">
+            <div className="flex items-start space-x-3">
+              <MapPin className="text-info mt-1 flex-shrink-0" size={20} />
+              <div>
+                <h3 className="font-semibold text-info mb-2">
+                  Sobre o Mapa da Saúde Mental
+                </h3>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>• Sua localização será usada apenas para buscar psicólogos próximos</p>
+                  <p>• Os dados de localização não são armazenados</p>
+                  <p>• O mapa abrirá no aplicativo nativo do seu dispositivo</p>
+                  <p>• Você pode negar a permissão a qualquer momento</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Modal de Permissão de Localização */}
+      <LocationPermissionModal
+        isOpen={showLocationModal}
+        onConfirm={handleConfirmLocation}
+        onDeny={handleDenyLocation}
+        onClose={() => setShowLocationModal(false)}
+      />
+
+      {/* Modal de Busca Manual */}
+      <ManualSearchModal
+        isOpen={showManualSearchModal}
+        onClose={() => setShowManualSearchModal(false)}
+      />
     </div>
   );
 };
