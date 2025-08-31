@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import UpdateNotification from "@/components/UpdateNotification";
+import InstallPWA from "@/components/InstallPWA";
 import useAppUpdate from "@/hooks/useAppUpdate";
 import Home from "./pages/Home";
 import Denuncia from "./pages/Denuncia";
@@ -34,6 +35,9 @@ const AppContent = () => {
         onUpdate={handleUpdate}
         onDismiss={dismissUpdate}
       />
+
+      {/* Botão de instalação PWA */}
+      <InstallPWA />
     </div>
   );
 };

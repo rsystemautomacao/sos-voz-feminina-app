@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useToast } from './use-toast';
 
 interface AppUpdateInfo {
   version: string;
@@ -8,7 +7,6 @@ interface AppUpdateInfo {
 
 const useAppUpdate = () => {
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Verificar se há uma nova versão disponível
@@ -16,36 +14,33 @@ const useAppUpdate = () => {
       const currentVersion = '1.0.3';
       const lastUpdateCheck = localStorage.getItem('lastUpdateCheck');
       const lastVersion = localStorage.getItem('appVersion');
+      const lastNotificationTime = localStorage.getItem('lastUpdateNotification');
 
-      // Se é a primeira vez ou a versão mudou
-      if (!lastVersion || lastVersion !== currentVersion) {
+      // Só mostrar notificação se:
+      // 1. Versão mudou E
+      // 2. Não mostrou notificação nas últimas 24h
+      const shouldNotify = 
+        lastVersion !== currentVersion &&
+        (!lastNotificationTime || 
+         (Date.now() - parseInt(lastNotificationTime)) > (24 * 60 * 60 * 1000));
+
+      if (shouldNotify) {
         localStorage.setItem('appVersion', currentVersion);
         localStorage.setItem('lastUpdateCheck', Date.now().toString());
+        localStorage.setItem('lastUpdateNotification', Date.now().toString());
         
-        // Mostrar notificação de atualização
+        // Mostrar notificação de atualização (apenas a principal)
         setShowUpdatePrompt(true);
-        
-        toast({
-          title: "Nova versão disponível!",
-          description: "Uma nova versão do app foi carregada. Clique para atualizar.",
-        });
       }
     };
 
-    // Verificar atualizações quando o app carrega
-    checkForUpdates();
-
-    // Verificar atualizações quando a conexão volta online
-    const handleOnline = () => {
+    // Aguardar um pouco antes de verificar para evitar conflitos com limpeza de cache
+    const timer = setTimeout(() => {
       checkForUpdates();
-    };
+    }, 2000);
 
-    window.addEventListener('online', handleOnline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-    };
-  }, [toast]);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleUpdate = () => {
     window.location.reload();
