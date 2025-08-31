@@ -15,7 +15,6 @@ import {
   MapPin,
   User,
   TrendingUp,
-  Download,
   MessageSquare,
   Play,
   Pause,
@@ -44,6 +43,8 @@ const Admin = () => {
   const [estatisticas, setEstatisticas] = useState<any>(null);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioRef, setAudioRef] = useState<HTMLAudioElement | null>(null);
+  const [showStatusConfirm, setShowStatusConfirm] = useState(false);
+  const [pendingStatusChange, setPendingStatusChange] = useState<{id: string, status: Denuncia['status']} | null>(null);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -58,7 +59,7 @@ const Admin = () => {
     setIsLoading(true);
     
     try {
-      const denunciasData = await denunciaService.getDenuncias();
+      const denunciasData = denunciaService.getDenuncias();
       setDenuncias(denunciasData);
       setFilteredDenuncias(denunciasData);
     } catch (error) {
@@ -110,16 +111,30 @@ const Admin = () => {
   }, [denuncias, searchTerm, statusFilter, prioridadeFilter]);
 
   const updateDenunciaStatus = async (id: string, newStatus: Denuncia['status']) => {
+    setPendingStatusChange({ id, status: newStatus });
+    setShowStatusConfirm(true);
+  };
+
+  const confirmStatusChange = async () => {
+    if (!pendingStatusChange) return;
+
     try {
-      await denunciaService.atualizarStatus(id, newStatus, observacoes);
+      await denunciaService.atualizarStatus(pendingStatusChange.id, pendingStatusChange.status, observacoes);
       
       // Recarregar dados
       await loadDenuncias();
       await loadEstatisticas();
       
+      const statusText = {
+        'pendente': 'Pendente',
+        'analisando': 'Em Análise',
+        'resolvido': 'Resolvida',
+        'arquivado': 'Arquivada'
+      }[pendingStatusChange.status];
+      
       toast({
-        title: "Status atualizado",
-        description: `Denúncia ${id} marcada como ${newStatus}.`,
+        title: "✅ Status atualizado com sucesso!",
+        description: `A denúncia foi marcada como "${statusText}". Esta alteração foi registrada no histórico de auditoria.`,
       });
       
       setSelectedDenuncia(null);
@@ -127,10 +142,13 @@ const Admin = () => {
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
       toast({
-        title: "Erro ao atualizar",
-        description: "Não foi possível atualizar o status da denúncia.",
+        title: "❌ Erro ao atualizar status",
+        description: "Não foi possível atualizar o status da denúncia. Tente novamente.",
         variant: "destructive",
       });
+    } finally {
+      setShowStatusConfirm(false);
+      setPendingStatusChange(null);
     }
   };
 
@@ -156,32 +174,7 @@ const Admin = () => {
     }
   };
 
-  const exportarDenuncias = async () => {
-    try {
-      const dados = await denunciaService.exportarDenuncias('json');
-      const blob = new Blob([dados], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `denuncias_${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      toast({
-        title: "Exportação realizada",
-        description: "Arquivo de denúncias baixado com sucesso.",
-      });
-    } catch (error) {
-      console.error('Erro ao exportar:', error);
-      toast({
-        title: "Erro na exportação",
-        description: "Não foi possível exportar as denúncias.",
-        variant: "destructive",
-      });
-    }
-  };
+
 
   // Funções para reproduzir áudio
   const playAudio = (evidencia: Evidencia) => {
@@ -375,15 +368,7 @@ const Admin = () => {
                   </SelectContent>
                 </Select>
 
-                <Button
-                  onClick={exportarDenuncias}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-2"
-                >
-                  <Download size={16} />
-                  <span>Exportar</span>
-                </Button>
+                
               </div>
             </div>
           </CardContent>
@@ -674,6 +659,57 @@ const Admin = () => {
                   className="text-green-600 border-green-200 hover:bg-green-50"
                 >
                   Prioridade Baixa
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Modal de Confirmação de Mudança de Status */}
+      {showStatusConfirm && pendingStatusChange && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md shadow-strong border-0 bg-white/95 backdrop-blur-sm">
+            <CardHeader className="text-center pb-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <AlertTriangle className="text-blue-600" size={24} />
+              </div>
+              <CardTitle className="text-xl text-blue-600">Confirmar Mudança de Status</CardTitle>
+              <CardDescription className="text-sm">
+                Tem certeza que deseja alterar o status desta denúncia?
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-6 pb-6 space-y-4">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <AlertTriangle className="text-blue-600 mt-0.5 flex-shrink-0" size={16} />
+                  <div className="text-sm">
+                    <h4 className="font-semibold text-blue-800 mb-1">Atenção!</h4>
+                    <p className="text-blue-700">
+                      A denúncia será marcada como <strong>"{pendingStatusChange.status}"</strong>. 
+                      Esta alteração será registrada no histórico de auditoria e poderá ser visualizada pelos outros administradores.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-3 pt-3">
+                <Button
+                  onClick={() => {
+                    setShowStatusConfirm(false);
+                    setPendingStatusChange(null);
+                  }}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={confirmStatusChange}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                >
+                  <CheckCircle size={16} className="mr-2" />
+                  Confirmar Mudança
                 </Button>
               </div>
             </CardContent>

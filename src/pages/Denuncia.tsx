@@ -265,41 +265,41 @@ const Denuncia = () => {
       <Navigation />
       <div className="py-8 px-4">
         <div className="max-w-3xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
+        {/* Header */}
+        <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-emergency rounded-full flex items-center justify-center mx-auto mb-6 shadow-strong">
               <AlertTriangle className="text-emergency-foreground" size={40} />
-            </div>
-            <h1 className="text-4xl font-bold text-foreground mb-3">
-              Fazer Denúncia Anônima
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Seu relato é importante e será tratado com total confidencialidade
-            </p>
           </div>
+            <h1 className="text-4xl font-bold text-foreground mb-3">
+            Fazer Denúncia Anônima
+          </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Seu relato é importante e será tratado com total confidencialidade
+          </p>
+        </div>
 
-          {/* Security Notice */}
+        {/* Security Notice */}
           <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 shadow-soft">
-            <CardContent className="pt-6">
+          <CardContent className="pt-6">
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
                   <Shield className="text-primary-foreground" size={24} />
                 </div>
-                <div>
+              <div>
                   <h3 className="font-semibold text-primary text-lg mb-2">
                     Garantia de Anonimato Total
-                  </h3>
+                </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Esta denúncia é 100% anônima. Não coletamos dados pessoais, 
-                    endereço IP ou qualquer informação que possa identificá-la. 
+                  Esta denúncia é 100% anônima. Não coletamos dados pessoais, 
+                  endereço IP ou qualquer informação que possa identificá-la. 
                     Você está completamente protegida.
-                  </p>
-                </div>
+                </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Formulário */}
+        {/* Formulário */}
           <Card className="shadow-strong border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="text-center pb-6">
               <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
@@ -307,9 +307,9 @@ const Denuncia = () => {
               </div>
               <CardTitle className="text-2xl text-primary">Relatar Situação</CardTitle>
               <CardDescription className="text-base">
-                Descreva o que aconteceu da forma que se sentir confortável
-              </CardDescription>
-            </CardHeader>
+              Descreva o que aconteceu da forma que se sentir confortável
+            </CardDescription>
+          </CardHeader>
             <CardContent className="px-8 pb-8">
               <form onSubmit={handleSubmit} className="space-y-8">
                 
@@ -400,35 +400,35 @@ const Denuncia = () => {
                   </div>
                 </div>
 
-                {/* Relato por texto */}
+              {/* Relato por texto */}
                 <div className="space-y-3">
                   <Label htmlFor="relato" className="text-base font-semibold flex items-center space-x-2">
                     <FileText className="text-purple-500" size={18} />
                     <span>Descrição da situação *</span>
-                  </Label>
+                </Label>
                   <div className="relative">
-                    <Textarea
-                      id="relato"
-                      placeholder="Conte o que aconteceu... Você pode incluir detalhes como data, local, pessoas envolvidas, testemunhas, etc. Lembre-se: quanto mais informações, melhor poderemos ajudar."
+                <Textarea
+                  id="relato"
+                  placeholder="Conte o que aconteceu... Você pode incluir detalhes como data, local, pessoas envolvidas, testemunhas, etc. Lembre-se: quanto mais informações, melhor poderemos ajudar."
                       value={denunciaData.relato}
                       onChange={(e) => setDenunciaData(prev => ({ ...prev, relato: e.target.value }))}
                       className="min-h-[180px] resize-none bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-200 hover:border-purple-400 focus:border-purple-500 transition-all duration-300 rounded-xl p-4 text-base"
-                      maxLength={2000}
-                    />
+                  maxLength={2000}
+                />
                     <div className="absolute bottom-3 right-3">
                       <span className="text-xs text-muted-foreground bg-white/80 px-2 py-1 rounded-full">
                         {denunciaData.relato.length}/2000
                       </span>
                     </div>
                   </div>
-                </div>
+              </div>
 
-                {/* Opções de anexos */}
-                <div className="space-y-4">
+              {/* Opções de anexos */}
+              <div className="space-y-4">
                   <Label className="text-base font-semibold flex items-center space-x-2">
                     <Upload className="text-orange-500" size={18} />
                     <span>Evidências (Opcional)</span>
-                  </Label>
+                </Label>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* Botão Câmera */}
@@ -523,31 +523,31 @@ const Denuncia = () => {
                       </div>
                     </div>
                   )}
-                </div>
+              </div>
 
-                {/* Botão de envio */}
+              {/* Botão de envio */}
                 <div className="pt-6">
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting}
                     className="w-full h-14 bg-gradient-emergency hover:bg-gradient-emergency/90 text-white font-semibold text-lg rounded-xl shadow-strong transition-all duration-300 transform hover:scale-[1.02]"
-                  >
-                    {isSubmitting ? (
+                >
+                  {isSubmitting ? (
                       <div className="flex items-center space-x-2">
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         <span>Enviando...</span>
                       </div>
-                    ) : (
+                  ) : (
                       <div className="flex items-center space-x-2">
-                        <Send size={20} />
+                      <Send size={20} />
                         <span>Enviar Denúncia Anônima</span>
                       </div>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
 
           {/* Inputs ocultos para arquivos */}
           <input

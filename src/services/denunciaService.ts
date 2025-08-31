@@ -111,7 +111,7 @@ class DenunciaService {
   }
 
   // Buscar todas as denúncias
-  async getDenuncias(): Promise<Denuncia[]> {
+  getDenuncias(): Denuncia[] {
     return this.getDenunciasFromStorage();
   }
 

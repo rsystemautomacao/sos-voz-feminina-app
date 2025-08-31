@@ -6,13 +6,19 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import UpdateNotification from "@/components/UpdateNotification";
 import InstallPWA from "@/components/InstallPWA";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import SuperAdminRoute from "@/components/SuperAdminRoute";
 import useAppUpdate from "@/hooks/useAppUpdate";
 import Home from "./pages/Home";
 import Denuncia from "./pages/Denuncia";
 import Educativo from "./pages/Educativo";
 import Contatos from "./pages/Contatos";
+import Sobre from "./pages/Sobre";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
+import AdminConfiguracoes from "./pages/AdminConfiguracoes";
+import AdminEstatisticas from "./pages/AdminEstatisticas";
+import AdminRegister from "./pages/AdminRegister";
+import AdminResetPassword from "./pages/AdminResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,12 +33,33 @@ const AppContent = () => {
         <Route path="/denuncia" element={<Denuncia />} />
         <Route path="/educativo" element={<Educativo />} />
         <Route path="/contatos" element={<Contatos />} />
+        <Route path="/sobre" element={<Sobre />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/admin/register" element={<AdminRegister />} />
+        <Route path="/admin/reset-password" element={<AdminResetPassword />} />
         <Route 
           path="/admin" 
           element={
             <ProtectedRoute>
               <Admin />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/configuracoes" 
+          element={
+            <ProtectedRoute>
+              <SuperAdminRoute>
+                <AdminConfiguracoes />
+              </SuperAdminRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/estatisticas" 
+          element={
+            <ProtectedRoute>
+              <AdminEstatisticas />
             </ProtectedRoute>
           } 
         />
