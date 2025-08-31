@@ -1,274 +1,355 @@
 import { useState } from "react";
-import { BookOpen, Shield, Scale, Heart, AlertTriangle, FileText } from "lucide-react";
+import { BookOpen, Shield, Users, Phone, FileText, ArrowRight, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Navigation from "@/components/Navigation";
 
 const Educativo = () => {
-  const [activeSection, setActiveSection] = useState<string | undefined>(undefined);
-
-  const educationalContent = [
-    {
-      id: "assedio",
-      title: "O que é assédio sexual?",
-      content: (
-        <div className="space-y-4">
-          <p>O assédio sexual é qualquer conduta de natureza sexual não desejada que:</p>
-          <ul className="list-disc list-inside space-y-2 text-sm">
-            <li>Constrange, intimida ou humilha a vítima</li>
-            <li>Interfere no trabalho ou cria ambiente hostil</li>
-            <li>Condiciona vantagens a favores sexuais</li>
-            <li>Inclui toques, comentários, gestos ou propostas indesejadas</li>
-          </ul>
-          <div className="bg-destructive/10 p-4 rounded-lg border border-destructive/20">
-            <p className="text-sm font-medium text-destructive">
-              ⚠️ Importante: O assédio pode ser verbal, físico, visual ou psicológico. 
-              Não precisa ser "grave" para ser denunciado.
-            </p>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: "direitos",
-      title: "Seus direitos fundamentais",
-      content: (
-        <div className="space-y-4">
-          <h4 className="font-semibold">Você tem direito a:</h4>
-          <ul className="list-disc list-inside space-y-2 text-sm">
-            <li>Trabalhar em ambiente seguro e respeitoso</li>
-            <li>Denunciar sem sofrer retaliação</li>
-            <li>Ter sua denúncia investigada adequadamente</li>
-            <li>Receber apoio psicológico e jurídico</li>
-            <li>Manter sua privacidade protegida</li>
-            <li>Ser ouvida e levada a sério</li>
-          </ul>
-          <div className="bg-success/10 p-4 rounded-lg border border-success/20">
-            <p className="text-sm font-medium text-success">
-              ✓ Lei Maria da Penha e Código Penal protegem suas denúncias
-            </p>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: "como-agir",
-      title: "Como agir em situações de assédio",
-      content: (
-        <div className="space-y-4">
-          <h4 className="font-semibold">Passos recomendados:</h4>
-          <div className="space-y-3">
-            <div className="flex space-x-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-primary rounded-full text-primary-foreground text-xs flex items-center justify-center font-bold">1</span>
-              <div>
-                <p className="font-medium">Documente tudo</p>
-                <p className="text-sm text-muted-foreground">Data, local, testemunhas, o que foi dito/feito</p>
-              </div>
-            </div>
-            <div className="flex space-x-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-primary rounded-full text-primary-foreground text-xs flex items-center justify-center font-bold">2</span>
-              <div>
-                <p className="font-medium">Comunique claramente</p>
-                <p className="text-sm text-muted-foreground">Deixe claro que o comportamento é indesejado</p>
-              </div>
-            </div>
-            <div className="flex space-x-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-primary rounded-full text-primary-foreground text-xs flex items-center justify-center font-bold">3</span>
-              <div>
-                <p className="font-medium">Busque apoio</p>
-                <p className="text-sm text-muted-foreground">Converse com pessoas de confiança</p>
-              </div>
-            </div>
-            <div className="flex space-x-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-primary rounded-full text-primary-foreground text-xs flex items-center justify-center font-bold">4</span>
-              <div>
-                <p className="font-medium">Denuncie</p>
-                <p className="text-sm text-muted-foreground">Use canais oficiais ou este app</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: "evidencias",
-      title: "Como reunir evidências",
-      content: (
-        <div className="space-y-4">
-          <h4 className="font-semibold">Tipos de evidências importantes:</h4>
-          <ul className="list-disc list-inside space-y-2 text-sm">
-            <li>Screenshots de mensagens</li>
-            <li>E-mails salvos</li>
-            <li>Gravações de áudio (onde legalmente permitido)</li>
-            <li>Fotos de bilhetes ou cartas</li>
-            <li>Registro de datas e horários</li>
-            <li>Nomes de testemunhas</li>
-            <li>Relatórios médicos se houver impacto na saúde</li>
-          </ul>
-          <div className="bg-warning/10 p-4 rounded-lg border border-warning/20">
-            <p className="text-sm font-medium text-warning">
-              💡 Dica: Mantenha cópias em local seguro, preferencialmente fora do trabalho
-            </p>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: "apoio-emocional",
-      title: "Cuidando da sua saúde mental",
-      content: (
-        <div className="space-y-4">
-          <p>Ser vítima de assédio pode causar impactos emocionais significativos:</p>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <h5 className="font-medium text-destructive mb-2">Sintomas comuns:</h5>
-              <ul className="text-sm space-y-1">
-                <li>• Ansiedade e estresse</li>
-                <li>• Dificuldade para dormir</li>
-                <li>• Perda de autoestima</li>
-                <li>• Evitar determinados locais</li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="font-medium text-success mb-2">Estratégias de cuidado:</h5>
-              <ul className="text-sm space-y-1">
-                <li>• Buscar apoio psicológico</li>
-                <li>• Conversar com pessoas de confiança</li>
-                <li>• Praticar autocuidado</li>
-                <li>• Manter rotinas saudáveis</li>
-              </ul>
-            </div>
-          </div>
-          <div className="bg-accent/10 p-4 rounded-lg border border-accent/20">
-            <p className="text-sm font-medium text-accent-foreground">
-              💝 Lembre-se: Buscar ajuda é sinal de força, não fraqueza
-            </p>
-          </div>
-        </div>
-      )
-    }
-  ];
-
-  const handleCardClick = (sectionId: string) => {
-    setActiveSection(sectionId);
-    // Scroll para a seção do accordion
-    setTimeout(() => {
-      const element = document.getElementById(`accordion-${sectionId}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 100);
-  };
+  const [activeTab, setActiveTab] = useState("direitos");
 
   return (
-    <div className="min-h-screen bg-gradient-soft py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-strong">
-            <BookOpen className="text-primary-foreground" size={32} />
-          </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Material Educativo
-          </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Conheça seus direitos, saiba como agir e entenda que você não está sozinha. 
-            O conhecimento é uma ferramenta poderosa de proteção.
-          </p>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Card 
-            className="text-center shadow-soft hover:shadow-strong transition-all cursor-pointer hover:scale-105"
-            onClick={() => handleCardClick('direitos')}
-          >
-            <CardContent className="pt-6">
-              <Shield className="mx-auto mb-3 text-primary" size={32} />
-              <h3 className="font-semibold mb-2">Seus Direitos</h3>
-              <p className="text-sm text-muted-foreground">
-                Conheça as leis que te protegem
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card 
-            className="text-center shadow-soft hover:shadow-strong transition-all cursor-pointer hover:scale-105"
-            onClick={() => handleCardClick('assedio')}
-          >
-            <CardContent className="pt-6">
-              <AlertTriangle className="mx-auto mb-3 text-warning" size={32} />
-              <h3 className="font-semibold mb-2">Como Identificar</h3>
-              <p className="text-sm text-muted-foreground">
-                Reconheça situações de assédio
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card 
-            className="text-center shadow-soft hover:shadow-strong transition-all cursor-pointer hover:scale-105"
-            onClick={() => handleCardClick('apoio-emocional')}
-          >
-            <CardContent className="pt-6">
-              <Heart className="mx-auto mb-3 text-success" size={32} />
-              <h3 className="font-semibold mb-2">Apoio Emocional</h3>
-              <p className="text-sm text-muted-foreground">
-                Cuide da sua saúde mental
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Educational Content */}
-        <Card className="shadow-strong" id="accordion-section">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <FileText className="text-primary" size={24} />
-              <span>Guia Completo de Orientações</span>
-            </CardTitle>
-            <CardDescription>
-              Informações essenciais para sua proteção e empoderamento
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Accordion 
-              type="single" 
-              collapsible 
-              className="w-full"
-              value={activeSection}
-              onValueChange={setActiveSection}
-            >
-              {educationalContent.map((item) => (
-                <AccordionItem key={item.id} value={item.id} id={`accordion-${item.id}`}>
-                  <AccordionTrigger className="text-left">
-                    {item.title}
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    {item.content}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </CardContent>
-        </Card>
-
-        {/* Resources */}
-        <Card className="mt-8 bg-primary-lighter/10 border-primary-lighter">
-          <CardContent className="pt-6">
-            <div className="flex items-start space-x-3">
-              <Scale className="text-primary mt-1 flex-shrink-0" size={20} />
-              <div>
-                <h3 className="font-semibold text-primary mb-2">
-                  Marco Legal de Proteção
-                </h3>
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <p><strong>Lei Maria da Penha (11.340/2006):</strong> Protege mulheres contra violência doméstica e familiar</p>
-                  <p><strong>Código Penal Art. 216-A:</strong> Tipifica o crime de assédio sexual</p>
-                  <p><strong>CLT Art. 483:</strong> Permite rescisão indireta por assédio moral</p>
-                </div>
-              </div>
+    <div className="min-h-screen bg-gradient-soft">
+      <Navigation />
+      <div className="py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="w-24 h-24 bg-gradient-blue rounded-full flex items-center justify-center mx-auto mb-6 shadow-strong">
+              <BookOpen className="text-blue-foreground" size={48} />
             </div>
-          </CardContent>
-        </Card>
+            <h1 className="text-5xl font-bold text-foreground mb-4">
+              Centro Educativo
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Conheça seus direitos, aprenda sobre violência doméstica e encontre recursos de apoio
+            </p>
+          </div>
+
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+            <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto">
+              <TabsTrigger value="direitos" className="flex items-center space-x-2">
+                <Shield size={16} />
+                <span>Direitos</span>
+              </TabsTrigger>
+              <TabsTrigger value="tipos" className="flex items-center space-x-2">
+                <FileText size={16} />
+                <span>Tipos</span>
+              </TabsTrigger>
+              <TabsTrigger value="recursos" className="flex items-center space-x-2">
+                <Users size={16} />
+                <span>Recursos</span>
+              </TabsTrigger>
+              <TabsTrigger value="emergencia" className="flex items-center space-x-2">
+                <Phone size={16} />
+                <span>Emergência</span>
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Tab Direitos */}
+            <TabsContent value="direitos" className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Shield className="text-primary" size={24} />
+                      <span>Direitos Fundamentais</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Direito à vida, liberdade e segurança pessoal</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Direito à integridade física, psíquica e moral</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Direito à igualdade de tratamento perante a lei</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Direito à proteção contra qualquer forma de discriminação</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <FileText className="text-primary" size={24} />
+                      <span>Lei Maria da Penha</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      A Lei Maria da Penha (Lei 11.340/2006) é a principal legislação brasileira para coibir a violência doméstica e familiar contra a mulher.
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Cria mecanismos para coibir a violência doméstica</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Estabelece medidas protetivas de urgência</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Prevê punições mais severas para agressores</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Tab Tipos */}
+            <TabsContent value="tipos" className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Violência Física</CardTitle>
+                    <CardDescription>Agressões corporais</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Qualquer conduta que ofenda a integridade ou saúde corporal da mulher.
+                    </p>
+                    <div className="space-y-2 text-xs">
+                      <p>• Socos, chutes, empurrões</p>
+                      <p>• Queimaduras, cortes</p>
+                      <p>• Estrangulamento</p>
+                      <p>• Uso de objetos como armas</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Violência Psicológica</CardTitle>
+                    <CardDescription>Danos emocionais</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Qualquer conduta que cause dano emocional e diminuição da autoestima.
+                    </p>
+                    <div className="space-y-2 text-xs">
+                      <p>• Humilhação, ridicularização</p>
+                      <p>• Controle de comportamento</p>
+                      <p>• Isolamento social</p>
+                      <p>• Ameaças constantes</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Violência Sexual</CardTitle>
+                    <CardDescription>Abuso e assédio</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Qualquer conduta que force a mulher a presenciar ou participar de relação sexual.
+                    </p>
+                    <div className="space-y-2 text-xs">
+                      <p>• Estupro conjugal</p>
+                      <p>• Assédio sexual</p>
+                      <p>• Exploração sexual</p>
+                      <p>• Tráfico de mulheres</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Violência Econômica</CardTitle>
+                    <CardDescription>Controle financeiro</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Qualquer conduta que configure retenção ou subtração de bens.
+                    </p>
+                    <div className="space-y-2 text-xs">
+                      <p>• Controle do dinheiro</p>
+                      <p>• Impedimento de trabalhar</p>
+                      <p>• Destruição de documentos</p>
+                      <p>• Retenção de salário</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Violência Moral</CardTitle>
+                    <CardDescription>Calúnia e difamação</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Qualquer conduta que configure calúnia, difamação ou injúria.
+                    </p>
+                    <div className="space-y-2 text-xs">
+                      <p>• Acusações falsas</p>
+                      <p>• Difamação pública</p>
+                      <p>• Exposição de intimidade</p>
+                      <p>• Fofocas maldosas</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Violência Patrimonial</CardTitle>
+                    <CardDescription>Destruição de bens</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Qualquer conduta que configure retenção, subtração ou destruição de bens.
+                    </p>
+                    <div className="space-y-2 text-xs">
+                      <p>• Quebra de objetos pessoais</p>
+                      <p>• Destruição de documentos</p>
+                      <p>• Venda forçada de bens</p>
+                      <p>• Esconder pertences</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Tab Recursos */}
+            <TabsContent value="recursos" className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Users className="text-primary" size={24} />
+                      <span>Rede de Apoio</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Centros de Referência da Mulher</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Delegacias Especializadas de Atendimento à Mulher (DEAM)</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Casas Abrigo</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Serviços de Psicologia e Assistência Social</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <FileText className="text-primary" size={24} />
+                      <span>Medidas Protetivas</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      As medidas protetivas são ordens judiciais que visam proteger a mulher em situação de violência.
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Afastamento do agressor do lar</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Proibição de aproximação</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Suspensão de posse de arma de fogo</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Tab Emergência */}
+            <TabsContent value="emergencia" className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Card className="shadow-soft border-red-200 bg-red-50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2 text-red-800">
+                      <Phone className="text-red-600" size={24} />
+                      <span>Números de Emergência</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-red-800">Polícia Militar</h4>
+                        <p className="text-3xl font-bold text-red-600">190</p>
+                        <p className="text-sm text-red-600">Para emergências imediatas</p>
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-red-800">Disque 180</h4>
+                        <p className="text-3xl font-bold text-red-600">180</p>
+                        <p className="text-sm text-red-600">Central de Atendimento à Mulher</p>
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-red-800">Disque 100</h4>
+                        <p className="text-3xl font-bold text-red-600">100</p>
+                        <p className="text-sm text-red-600">Direitos Humanos</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Shield className="text-primary" size={24} />
+                      <span>Plano de Segurança</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Prepare-se para uma situação de emergência com antecedência.
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Tenha um plano de fuga</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Mantenha documentos importantes em local seguro</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Tenha dinheiro reserva escondido</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm">Identifique pessoas de confiança para contato</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );

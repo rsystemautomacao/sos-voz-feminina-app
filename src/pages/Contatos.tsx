@@ -1,360 +1,278 @@
-import { Phone, MessageSquare, Globe, Heart, Scale, Users, MapPin } from "lucide-react";
+import { useState } from "react";
+import { Phone, Mail, MapPin, Clock, Shield, AlertTriangle, Users, Heart, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState } from "react";
-import LocationPermissionModal from "@/components/LocationPermissionModal";
+import { Badge } from "@/components/ui/badge";
+import Navigation from "@/components/Navigation";
 import ManualSearchModal from "@/components/ManualSearchModal";
 
 const Contatos = () => {
-  const [isRequestingLocation, setIsRequestingLocation] = useState(false);
-  const [showLocationModal, setShowLocationModal] = useState(false);
   const [showManualSearchModal, setShowManualSearchModal] = useState(false);
 
-  const emergencyContacts = [
-    {
-      name: "Disque 180",
-      description: "Central de Atendimento à Mulher - 24h",
-      phone: "180",
-      type: "emergency",
-      icon: Phone,
-    },
-    {
-      name: "Polícia Militar",
-      description: "Emergências e ocorrências policiais",
-      phone: "190",
-      type: "emergency", 
-      icon: Phone,
-    },
-    {
-      name: "Bombeiros",
-      description: "Emergências médicas e resgates",
-      phone: "193",
-      type: "emergency",
-      icon: Phone,
-    },
-  ];
-
-  const supportContacts = [
-    {
-      category: "Apoio Psicológico",
-      icon: Heart,
-      contacts: [
-        {
-          name: "Centro de Valorização da Vida (CVV)",
-          description: "Apoio emocional e prevenção do suicídio",
-          phone: "188",
-          website: "cvv.org.br"
-        },
-        {
-          name: "Mapa da Saúde Mental",
-          description: "Encontre psicólogos em sua região",
-          type: "map",
-          special: true
-        },
-        {
-          name: "Psicólogos do SUS",
-          description: "Atendimento gratuito pelo Sistema Único de Saúde",
-          phone: "136"
-        }
-      ]
-    },
-    {
-      category: "Apoio Jurídico",
-      icon: Scale,
-      contacts: [
-        {
-          name: "Defensoria Pública",
-          description: "Assistência jurídica gratuita",
-          phone: "129"
-        },
-        {
-          name: "OAB - Comissão da Mulher",
-          description: "Orientação jurídica especializada",
-          website: "oab.org.br"
-        },
-        {
-          name: "Ministério Público",
-          description: "Denúncias e acompanhamento de casos",
-          website: "mpf.mp.br"
-        }
-      ]
-    },
-    {
-      category: "Organizações de Apoio",
-      icon: Users,
-      contacts: [
-        {
-          name: "Instituto Maria da Penha",
-          description: "Educação e direitos das mulheres",
-          website: "institutomariadapenha.org.br"
-        },
-        {
-          name: "Casa da Mulher Brasileira",
-          description: "Atendimento integral à mulher",
-          website: "gov.br/mdh"
-        },
-        {
-          name: "Think Olga",
-          description: "Empoderamento feminino e educação",
-          website: "thinkolga.com"
-        }
-      ]
-    }
-  ];
-
-  const callNumber = (phone: string) => {
-    window.open(`tel:${phone}`, '_self');
-  };
-
-  const openWebsite = (website: string) => {
-    window.open(`https://${website}`, '_blank');
-  };
-
-  const handleMapButtonClick = () => {
-    setShowLocationModal(true);
-  };
-
-  const handleConfirmLocation = async () => {
-    setShowLocationModal(false);
-    setIsRequestingLocation(true);
-    
-    try {
-      // Verificar se o navegador suporta geolocalização
-      if (!navigator.geolocation) {
-        alert('Seu navegador não suporta geolocalização. Por favor, use um dispositivo móvel.');
-        setIsRequestingLocation(false);
-        return;
-      }
-
-      // Solicitar permissão de localização
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 60000
-        });
-      });
-
-      const { latitude, longitude } = position.coords;
-      
-      // Detectar o sistema operacional para abrir o mapa correto
-      const userAgent = navigator.userAgent.toLowerCase();
-      let mapUrl = '';
-
-      if (/iphone|ipad|ipod/.test(userAgent)) {
-        // iOS - Apple Maps
-        mapUrl = `https://maps.apple.com/?q=psicólogo&ll=${latitude},${longitude}&z=13`;
-      } else if (/android/.test(userAgent)) {
-        // Android - Google Maps
-        mapUrl = `https://www.google.com/maps/search/psicólogo/@${latitude},${longitude},13z`;
-      } else {
-        // Desktop ou outros - Google Maps
-        mapUrl = `https://www.google.com/maps/search/psicólogo/@${latitude},${longitude},13z`;
-      }
-
-      // Abrir o mapa
-      window.open(mapUrl, '_blank');
-      
-    } catch (error) {
-      console.error('Erro ao obter localização:', error);
-      
-      if (error instanceof GeolocationPositionError) {
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            alert('Permissão de localização negada. Para encontrar psicólogos próximos, permita o acesso à sua localização.');
-            break;
-          case error.POSITION_UNAVAILABLE:
-            alert('Localização indisponível. Verifique se o GPS está ativado.');
-            break;
-          case error.TIMEOUT:
-            alert('Tempo limite excedido. Tente novamente.');
-            break;
-          default:
-            alert('Erro ao obter localização. Tente novamente.');
-        }
-      } else {
-        alert('Erro inesperado. Tente novamente.');
-      }
-    } finally {
-      setIsRequestingLocation(false);
-    }
-  };
-
   const handleDenyLocation = () => {
-    setShowLocationModal(false);
     setShowManualSearchModal(true);
   };
 
+  const emergencyContacts = [
+    {
+      name: "Polícia Militar",
+      number: "190",
+      description: "Emergências imediatas",
+      type: "emergency",
+      icon: AlertTriangle
+    },
+    {
+      name: "Disque 180",
+      number: "180",
+      description: "Central de Atendimento à Mulher",
+      type: "emergency",
+      icon: Shield
+    },
+    {
+      name: "Disque 100",
+      number: "100",
+      description: "Direitos Humanos",
+      type: "emergency",
+      icon: Shield
+    }
+  ];
+
+  const supportServices = [
+    {
+      name: "Centro de Referência da Mulher",
+      description: "Acolhimento e orientação jurídica",
+      services: ["Acolhimento", "Orientação Jurídica", "Apoio Psicológico"],
+      type: "support"
+    },
+    {
+      name: "Delegacia da Mulher (DEAM)",
+      description: "Registro de ocorrências e investigações",
+      services: ["Registro de BO", "Investigação", "Medidas Protetivas"],
+      type: "legal"
+    },
+    {
+      name: "Casa Abrigo",
+      description: "Acolhimento temporário para mulheres em risco",
+      services: ["Acolhimento", "Proteção", "Reconstrução de Vida"],
+      type: "shelter"
+    },
+    {
+      name: "Serviço de Psicologia",
+      description: "Apoio emocional e saúde mental",
+      services: ["Terapia", "Apoio Emocional", "Processamento de Trauma"],
+      type: "health"
+    },
+    {
+      name: "Assistência Social",
+      description: "Orientação sobre benefícios e recursos",
+      services: ["Benefícios", "Orientação", "Inclusão Social"],
+      type: "social"
+    },
+    {
+      name: "Defensoria Pública",
+      description: "Assistência jurídica gratuita",
+      services: ["Assessoria Jurídica", "Representação Legal", "Orientação"],
+      type: "legal"
+    }
+  ];
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'emergency': return 'bg-red-100 text-red-800';
+      case 'support': return 'bg-blue-100 text-blue-800';
+      case 'legal': return 'bg-purple-100 text-purple-800';
+      case 'shelter': return 'bg-green-100 text-green-800';
+      case 'health': return 'bg-pink-100 text-pink-800';
+      case 'social': return 'bg-orange-100 text-orange-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'emergency': return AlertTriangle;
+      case 'support': return Shield;
+      case 'legal': return Shield;
+      case 'shelter': return Heart;
+      case 'health': return Heart;
+      case 'social': return Users;
+      default: return Shield;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-soft py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-strong">
-            <Phone className="text-primary-foreground" size={32} />
+    <div className="min-h-screen bg-gradient-soft">
+      <Navigation />
+      <div className="py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="w-24 h-24 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6 shadow-strong">
+              <Phone className="text-primary-foreground" size={48} />
+            </div>
+            <h1 className="text-5xl font-bold text-foreground mb-4">
+              Rede de Apoio
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Encontre contatos de emergência e serviços especializados para mulheres em situação de violência
+            </p>
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Rede de Contatos
-          </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Uma rede de apoio completa com profissionais e organizações 
-            especializadas em proteção e apoio às mulheres.
-          </p>
-        </div>
 
-        {/* Emergency Contacts */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-center">
-            <span className="text-emergency">Contatos de Emergência</span>
-          </h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {emergencyContacts.map((contact, index) => (
-              <Card key={index} className="shadow-strong border-emergency/20 bg-emergency/5">
-                <CardHeader className="text-center pb-3">
-                  <div className="w-12 h-12 bg-gradient-emergency rounded-full flex items-center justify-center mx-auto mb-3">
-                    <contact.icon className="text-emergency-foreground" size={24} />
-                  </div>
-                  <CardTitle className="text-emergency">{contact.name}</CardTitle>
-                  <CardDescription className="text-sm">
-                    {contact.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <Button 
-                    variant="emergency"
-                    size="lg"
-                    className="w-full text-xl font-bold"
-                    onClick={() => callNumber(contact.phone)}
-                  >
-                    {contact.phone}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+          {/* Emergency Contacts */}
+          <div className="mb-12">
+            <h2 className="text-3xl font-bold text-center mb-8">Contatos de Emergência</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {emergencyContacts.map((contact, index) => {
+                const Icon = contact.icon;
+                return (
+                  <Card key={index} className="shadow-soft border-red-200 bg-red-50 hover:shadow-strong transition-all">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Icon className="text-red-600" size={32} />
+                      </div>
+                      <CardTitle className="text-red-800">{contact.name}</CardTitle>
+                      <CardDescription className="text-red-600">{contact.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <div className="space-y-3">
+                        <p className="text-4xl font-bold text-red-600">{contact.number}</p>
+                        <Button 
+                          className="w-full bg-red-600 hover:bg-red-700 text-white"
+                          onClick={() => window.open(`tel:${contact.number}`)}
+                        >
+                          <Phone size={16} className="mr-2" />
+                          Ligar Agora
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
-        </div>
 
-        {/* Support Contacts */}
-        <div className="space-y-8">
-          {supportContacts.map((category, categoryIndex) => (
-            <Card key={categoryIndex} className="shadow-soft">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-                    <category.icon className="text-primary-foreground" size={20} />
-                  </div>
-                  <span className="text-primary">{category.category}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  {category.contacts.map((contact, contactIndex) => (
-                    <div 
-                      key={contactIndex}
-                      className="flex items-start justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-foreground mb-1">
-                          {contact.name}
-                        </h4>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {contact.description}
-                        </p>
-                        <div className="flex space-x-2">
-                          {contact.phone && (
-                            <Button 
-                              variant="soft" 
-                              size="sm"
-                              onClick={() => callNumber(contact.phone)}
-                            >
-                              <Phone size={14} />
-                              {contact.phone}
-                            </Button>
-                          )}
-                          {contact.website && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => openWebsite(contact.website)}
-                            >
-                              <Globe size={14} />
-                              Website
-                            </Button>
-                          )}
-                          {contact.special && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={handleMapButtonClick}
-                              disabled={isRequestingLocation}
-                            >
-                              <MapPin size={14} />
-                              {isRequestingLocation ? 'Carregando...' : 'Buscar Próximos'}
-                            </Button>
-                          )}
+          {/* Support Services */}
+          <div className="mb-12">
+            <h2 className="text-3xl font-bold text-center mb-8">Serviços de Apoio</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {supportServices.map((service, index) => {
+                const Icon = getTypeIcon(service.type);
+                return (
+                  <Card key={index} className="shadow-soft hover:shadow-strong transition-all">
+                    <CardHeader>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                          <Icon className="text-primary" size={24} />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">{service.name}</CardTitle>
+                          <Badge className={getTypeColor(service.type)}>
+                            {service.type === 'emergency' && 'Emergência'}
+                            {service.type === 'support' && 'Apoio'}
+                            {service.type === 'legal' && 'Jurídico'}
+                            {service.type === 'shelter' && 'Abrigo'}
+                            {service.type === 'health' && 'Saúde'}
+                            {service.type === 'social' && 'Social'}
+                          </Badge>
                         </div>
                       </div>
+                      <CardDescription>{service.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-sm">Serviços oferecidos:</h4>
+                        <div className="space-y-2">
+                          {service.services.map((s, i) => (
+                            <div key={i} className="flex items-center space-x-2">
+                              <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                              <span className="text-sm text-muted-foreground">{s}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          className="w-full mt-4"
+                          onClick={() => {
+                            // Aqui você pode adicionar lógica para buscar o contato mais próximo
+                            // Por enquanto, vamos mostrar o modal de busca manual
+                            handleDenyLocation();
+                          }}
+                        >
+                          <MapPin size={16} className="mr-2" />
+                          Encontrar Mais Próximo
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Information Card */}
+          <Card className="shadow-soft border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold text-primary">
+                    Como Funciona o Atendimento
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">1</div>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Contato:</strong> Entre em contato com o serviço mais próximo
+                      </p>
                     </div>
-                  ))}
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">2</div>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Acolhimento:</strong> Você será recebida com respeito e sigilo
+                      </p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">3</div>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Orientação:</strong> Receberá orientações sobre seus direitos e opções
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold text-primary">
+                    Seus Direitos no Atendimento
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Sigilo:</strong> Suas informações são protegidas
+                      </p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Respeito:</strong> Atendimento humanizado e sem julgamentos
+                      </p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Escolha:</strong> Você decide sobre as medidas a tomar
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Important Notice */}
-        <Card className="mt-8 border-warning/20 bg-warning/5">
-          <CardContent className="pt-6">
-            <div className="flex items-start space-x-3">
-              <MessageSquare className="text-warning mt-1 flex-shrink-0" size={20} />
-              <div>
-                <h3 className="font-semibold text-warning mb-2">
-                  Importante - Segurança Digital
-                </h3>
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <p>• Sempre limpe o histórico do navegador após usar este app</p>
-                  <p>• Use navegação privada/anônima quando possível</p>
-                  <p>• Tenha um plano de segurança para situações de emergência</p>
-                  <p>• Mantenha estes contatos salvos em local seguro</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Location Permission Notice */}
-        <Card className="mt-4 border-info/20 bg-info/5">
-          <CardContent className="pt-6">
-            <div className="flex items-start space-x-3">
-              <MapPin className="text-info mt-1 flex-shrink-0" size={20} />
-              <div>
-                <h3 className="font-semibold text-info mb-2">
-                  Sobre o Mapa da Saúde Mental
-                </h3>
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <p>• Sua localização será usada apenas para buscar psicólogos próximos</p>
-                  <p>• Os dados de localização não são armazenados</p>
-                  <p>• O mapa abrirá no aplicativo nativo do seu dispositivo</p>
-                  <p>• Você pode negar a permissão a qualquer momento</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Modal de Permissão de Localização */}
-      <LocationPermissionModal
-        isOpen={showLocationModal}
-        onConfirm={handleConfirmLocation}
-        onDeny={handleDenyLocation}
-        onClose={() => setShowLocationModal(false)}
-      />
-
-      {/* Modal de Busca Manual */}
-      <ManualSearchModal
-        isOpen={showManualSearchModal}
-        onClose={() => setShowManualSearchModal(false)}
+      {/* Manual Search Modal */}
+      <ManualSearchModal 
+        isOpen={showManualSearchModal} 
+        onClose={() => setShowManualSearchModal(false)} 
       />
     </div>
   );

@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import apiService from "@/services/api.ts";
+import { denunciaService, DenunciaInput } from "@/services/denunciaService";
+import Navigation from "@/components/Navigation";
+import DenunciaConfirmModal from "@/components/DenunciaConfirmModal";
 
 interface MediaFile {
   id: string;
@@ -17,20 +19,8 @@ interface MediaFile {
   name: string;
 }
 
-interface DenunciaData {
-  relato: string;
-  tipoViolencia: string;
-  dataOcorrido: string;
-  localizacao: {
-    cidade?: string;
-    estado?: string;
-    bairro?: string;
-  };
-  evidencias: File[];
-}
-
 const Denuncia = () => {
-  const [denunciaData, setDenunciaData] = useState<DenunciaData>({
+  const [denunciaData, setDenunciaData] = useState<DenunciaInput>({
     relato: "",
     tipoViolencia: "",
     dataOcorrido: "",
@@ -42,6 +32,8 @@ const Denuncia = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [denunciaConfirmada, setDenunciaConfirmada] = useState<{id: string, tipo: string} | null>(null);
   
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -89,7 +81,7 @@ const Denuncia = () => {
         setMediaFiles(prev => [...prev, mediaFile]);
         setDenunciaData(prev => ({
           ...prev,
-          evidencias: [...prev.evidencias, file]
+          evidencias: [...(prev.evidencias || []), file]
         }));
       }
     });
@@ -125,7 +117,7 @@ const Denuncia = () => {
         setMediaFiles(prev => [...prev, mediaFile]);
         setDenunciaData(prev => ({
           ...prev,
-          evidencias: [...prev.evidencias, audioFile]
+          evidencias: [...(prev.evidencias || []), audioFile]
         }));
         
         stream.getTracks().forEach(track => track.stop());
@@ -192,7 +184,7 @@ const Denuncia = () => {
       setMediaFiles(prev => prev.filter(file => file.id !== id));
       setDenunciaData(prev => ({
         ...prev,
-        evidencias: prev.evidencias.filter(file => file !== fileToRemove.file)
+        evidencias: prev.evidencias?.filter(file => file !== fileToRemove.file) || []
       }));
     }
   };
@@ -228,12 +220,15 @@ const Denuncia = () => {
     setIsSubmitting(true);
     
     try {
-      await apiService.criarDenuncia(denunciaData);
+      // Salvar denúncia usando o serviço real
+      const novaDenuncia = await denunciaService.criarDenuncia(denunciaData);
       
-      toast({
-        title: "Denúncia registrada com sucesso",
-        description: "Sua denúncia foi recebida de forma anônima e será analisada. Você é corajosa!",
+      // Mostrar modal de confirmação
+      setDenunciaConfirmada({
+        id: novaDenuncia.idPublico,
+        tipo: novaDenuncia.tipoViolencia
       });
+      setShowConfirmModal(true);
       
       // Limpar formulário
       setDenunciaData({
@@ -249,6 +244,7 @@ const Denuncia = () => {
       setMediaFiles([]);
       
     } catch (error) {
+      console.error('Erro ao salvar denúncia:', error);
       toast({
         title: "Erro ao enviar denúncia",
         description: "Tente novamente. Se o problema persistir, entre em contato conosco.",
@@ -259,311 +255,329 @@ const Denuncia = () => {
     }
   };
 
+  const handleCloseConfirmModal = () => {
+    setShowConfirmModal(false);
+    setDenunciaConfirmada(null);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-soft py-8 px-4">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-emergency rounded-full flex items-center justify-center mx-auto mb-6 shadow-strong">
-            <AlertTriangle className="text-emergency-foreground" size={40} />
+    <div className="min-h-screen bg-gradient-soft">
+      <Navigation />
+      <div className="py-8 px-4">
+        <div className="max-w-3xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gradient-emergency rounded-full flex items-center justify-center mx-auto mb-6 shadow-strong">
+              <AlertTriangle className="text-emergency-foreground" size={40} />
+            </div>
+            <h1 className="text-4xl font-bold text-foreground mb-3">
+              Fazer Denúncia Anônima
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Seu relato é importante e será tratado com total confidencialidade
+            </p>
           </div>
-          <h1 className="text-4xl font-bold text-foreground mb-3">
-            Fazer Denúncia Anônima
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Seu relato é importante e será tratado com total confidencialidade
-          </p>
-        </div>
 
-        {/* Security Notice */}
-        <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 shadow-soft">
-          <CardContent className="pt-6">
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
-                <Shield className="text-primary-foreground" size={24} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-primary text-lg mb-2">
-                  Garantia de Anonimato Total
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Esta denúncia é 100% anônima. Não coletamos dados pessoais, 
-                  endereço IP ou qualquer informação que possa identificá-la. 
-                  Você está completamente protegida.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Formulário */}
-        <Card className="shadow-strong border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="text-center pb-6">
-            <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="text-primary-foreground" size={28} />
-            </div>
-            <CardTitle className="text-2xl text-primary">Relatar Situação</CardTitle>
-            <CardDescription className="text-base">
-              Descreva o que aconteceu da forma que se sentir confortável
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="px-8 pb-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
-              
-              {/* Tipo de Violência */}
-              <div className="space-y-3">
-                <Label htmlFor="tipoViolencia" className="text-base font-semibold flex items-center space-x-2">
-                  <AlertTriangle className="text-emergency" size={18} />
-                  <span>Tipo de Violência *</span>
-                </Label>
-                <div className="relative">
-                  <Select 
-                    value={denunciaData.tipoViolencia} 
-                    onValueChange={(value) => setDenunciaData(prev => ({ ...prev, tipoViolencia: value }))}
-                  >
-                    <SelectTrigger className="h-12 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200 hover:border-primary/50 focus:border-primary transition-all duration-300 rounded-xl">
-                      <SelectValue placeholder="Selecione o tipo de violência" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-2">
-                      <SelectItem value="fisica" className="rounded-lg">Violência Física</SelectItem>
-                      <SelectItem value="psicologica" className="rounded-lg">Violência Psicológica</SelectItem>
-                      <SelectItem value="sexual" className="rounded-lg">Violência Sexual</SelectItem>
-                      <SelectItem value="economica" className="rounded-lg">Violência Econômica</SelectItem>
-                      <SelectItem value="moral" className="rounded-lg">Violência Moral</SelectItem>
-                      <SelectItem value="patrimonial" className="rounded-lg">Violência Patrimonial</SelectItem>
-                      <SelectItem value="outros" className="rounded-lg">Outros</SelectItem>
-                    </SelectContent>
-                  </Select>
+          {/* Security Notice */}
+          <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 shadow-soft">
+            <CardContent className="pt-6">
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
+                  <Shield className="text-primary-foreground" size={24} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-primary text-lg mb-2">
+                    Garantia de Anonimato Total
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Esta denúncia é 100% anônima. Não coletamos dados pessoais, 
+                    endereço IP ou qualquer informação que possa identificá-la. 
+                    Você está completamente protegida.
+                  </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
 
-              {/* Data do Ocorrido */}
-              <div className="space-y-3">
-                <Label htmlFor="dataOcorrido" className="text-base font-semibold flex items-center space-x-2">
-                  <Calendar className="text-blue-500" size={18} />
-                  <span>Data do Ocorrido</span>
-                </Label>
-                <div className="relative">
-                  <Input
-                    type="date"
-                    id="dataOcorrido"
-                    value={denunciaData.dataOcorrido}
-                    onChange={(e) => setDenunciaData(prev => ({ ...prev, dataOcorrido: e.target.value }))}
-                    className="h-12 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 hover:border-blue-400 focus:border-blue-500 transition-all duration-300 rounded-xl pl-4"
-                  />
-                </div>
+          {/* Formulário */}
+          <Card className="shadow-strong border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader className="text-center pb-6">
+              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="text-primary-foreground" size={28} />
               </div>
-
-              {/* Localização */}
-              <div className="space-y-3">
-                <Label className="text-base font-semibold flex items-center space-x-2">
-                  <MapPin className="text-green-500" size={18} />
-                  <span>Localização (Opcional)</span>
-                </Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Sua cidade"
-                      value={denunciaData.localizacao.cidade || ""}
-                      onChange={(e) => setDenunciaData(prev => ({ 
-                        ...prev, 
-                        localizacao: { ...prev.localizacao, cidade: e.target.value }
-                      }))}
-                      className="h-12 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 hover:border-green-400 focus:border-green-500 transition-all duration-300 rounded-xl"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Seu estado"
-                      value={denunciaData.localizacao.estado || ""}
-                      onChange={(e) => setDenunciaData(prev => ({ 
-                        ...prev, 
-                        localizacao: { ...prev.localizacao, estado: e.target.value }
-                      }))}
-                      className="h-12 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 hover:border-green-400 focus:border-green-500 transition-all duration-300 rounded-xl"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Seu bairro"
-                      value={denunciaData.localizacao.bairro || ""}
-                      onChange={(e) => setDenunciaData(prev => ({ 
-                        ...prev, 
-                        localizacao: { ...prev.localizacao, bairro: e.target.value }
-                      }))}
-                      className="h-12 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 hover:border-green-400 focus:border-green-500 transition-all duration-300 rounded-xl"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Relato por texto */}
-              <div className="space-y-3">
-                <Label htmlFor="relato" className="text-base font-semibold flex items-center space-x-2">
-                  <FileText className="text-purple-500" size={18} />
-                  <span>Descrição da situação *</span>
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="relato"
-                    placeholder="Conte o que aconteceu... Você pode incluir detalhes como data, local, pessoas envolvidas, testemunhas, etc. Lembre-se: quanto mais informações, melhor poderemos ajudar."
-                    value={denunciaData.relato}
-                    onChange={(e) => setDenunciaData(prev => ({ ...prev, relato: e.target.value }))}
-                    className="min-h-[180px] resize-none bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-200 hover:border-purple-400 focus:border-purple-500 transition-all duration-300 rounded-xl p-4 text-base"
-                    maxLength={2000}
-                  />
-                  <div className="absolute bottom-3 right-3">
-                    <span className="text-xs text-muted-foreground bg-white/80 px-2 py-1 rounded-full">
-                      {denunciaData.relato.length}/2000
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Opções de anexos */}
-              <div className="space-y-4">
-                <Label className="text-base font-semibold flex items-center space-x-2">
-                  <Upload className="text-orange-500" size={18} />
-                  <span>Evidências (Opcional)</span>
-                </Label>
+              <CardTitle className="text-2xl text-primary">Relatar Situação</CardTitle>
+              <CardDescription className="text-base">
+                Descreva o que aconteceu da forma que se sentir confortável
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-8 pb-8">
+              <form onSubmit={handleSubmit} className="space-y-8">
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Botão Câmera */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCameraCapture}
-                    className="h-16 bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-200 transition-all duration-300 rounded-xl flex flex-col items-center justify-center space-y-1"
-                  >
-                    <Camera className="text-orange-500" size={20} />
-                    <span className="text-xs font-medium">Foto</span>
-                  </Button>
-
-                  {/* Botão Galeria */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleFileSelect}
-                    className="h-16 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-200 transition-all duration-300 rounded-xl flex flex-col items-center justify-center space-y-1"
-                  >
-                    <FileImage className="text-blue-500" size={20} />
-                    <span className="text-xs font-medium">Galeria</span>
-                  </Button>
-
-                  {/* Botão Gravação */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={isRecording ? stopRecording : startRecording}
-                    className={`h-16 border-2 transition-all duration-300 rounded-xl flex flex-col items-center justify-center space-y-1 ${
-                      isRecording 
-                        ? 'bg-gradient-to-r from-red-50 to-red-100 border-red-400 hover:bg-red-200' 
-                        : 'bg-gradient-to-r from-green-50 to-green-100 border-green-200 hover:border-green-400 hover:bg-green-200'
-                    }`}
-                  >
-                    {isRecording ? (
-                      <>
-                        <Pause className="text-red-500" size={20} />
-                        <span className="text-xs font-medium">{formatRecordingTime(recordingTime)}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="text-green-500" size={20} />
-                        <span className="text-xs font-medium">Áudio</span>
-                      </>
-                    )}
-                  </Button>
+                {/* Tipo de Violência */}
+                <div className="space-y-3">
+                  <Label htmlFor="tipoViolencia" className="text-base font-semibold flex items-center space-x-2">
+                    <AlertTriangle className="text-emergency" size={18} />
+                    <span>Tipo de Violência *</span>
+                  </Label>
+                  <div className="relative">
+                    <Select 
+                      value={denunciaData.tipoViolencia} 
+                      onValueChange={(value) => setDenunciaData(prev => ({ ...prev, tipoViolencia: value }))}
+                    >
+                      <SelectTrigger className="h-12 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200 hover:border-primary/50 focus:border-primary transition-all duration-300 rounded-xl">
+                        <SelectValue placeholder="Selecione o tipo de violência" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-2">
+                        <SelectItem value="fisica" className="rounded-lg">Violência Física</SelectItem>
+                        <SelectItem value="psicologica" className="rounded-lg">Violência Psicológica</SelectItem>
+                        <SelectItem value="sexual" className="rounded-lg">Violência Sexual</SelectItem>
+                        <SelectItem value="economica" className="rounded-lg">Violência Econômica</SelectItem>
+                        <SelectItem value="moral" className="rounded-lg">Violência Moral</SelectItem>
+                        <SelectItem value="patrimonial" className="rounded-lg">Violência Patrimonial</SelectItem>
+                        <SelectItem value="outros" className="rounded-lg">Outros</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                {/* Arquivos anexados */}
-                {mediaFiles.length > 0 && (
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm text-muted-foreground">Arquivos anexados:</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {mediaFiles.map((file) => (
-                        <div
-                          key={file.id}
-                          className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200"
-                        >
-                          {file.type === 'image' ? (
-                            <FileImage className="text-blue-500" size={16} />
-                          ) : (
-                            <FileAudio className="text-green-500" size={16} />
-                          )}
-                          <span className="flex-1 text-sm truncate">{file.name}</span>
-                          {file.type === 'audio' && (
+                {/* Data do Ocorrido */}
+                <div className="space-y-3">
+                  <Label htmlFor="dataOcorrido" className="text-base font-semibold flex items-center space-x-2">
+                    <Calendar className="text-blue-500" size={18} />
+                    <span>Data do Ocorrido</span>
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type="date"
+                      id="dataOcorrido"
+                      value={denunciaData.dataOcorrido}
+                      onChange={(e) => setDenunciaData(prev => ({ ...prev, dataOcorrido: e.target.value }))}
+                      className="h-12 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 hover:border-blue-400 focus:border-blue-500 transition-all duration-300 rounded-xl pl-4"
+                    />
+                  </div>
+                </div>
+
+                {/* Localização */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold flex items-center space-x-2">
+                    <MapPin className="text-green-500" size={18} />
+                    <span>Localização (Opcional)</span>
+                  </Label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Sua cidade"
+                        value={denunciaData.localizacao.cidade || ""}
+                        onChange={(e) => setDenunciaData(prev => ({ 
+                          ...prev, 
+                          localizacao: { ...prev.localizacao, cidade: e.target.value }
+                        }))}
+                        className="h-12 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 hover:border-green-400 focus:border-green-500 transition-all duration-300 rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Seu estado"
+                        value={denunciaData.localizacao.estado || ""}
+                        onChange={(e) => setDenunciaData(prev => ({ 
+                          ...prev, 
+                          localizacao: { ...prev.localizacao, estado: e.target.value }
+                        }))}
+                        className="h-12 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 hover:border-green-400 focus:border-green-500 transition-all duration-300 rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Seu bairro"
+                        value={denunciaData.localizacao.bairro || ""}
+                        onChange={(e) => setDenunciaData(prev => ({ 
+                          ...prev, 
+                          localizacao: { ...prev.localizacao, bairro: e.target.value }
+                        }))}
+                        className="h-12 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 hover:border-green-400 focus:border-green-500 transition-all duration-300 rounded-xl"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Relato por texto */}
+                <div className="space-y-3">
+                  <Label htmlFor="relato" className="text-base font-semibold flex items-center space-x-2">
+                    <FileText className="text-purple-500" size={18} />
+                    <span>Descrição da situação *</span>
+                  </Label>
+                  <div className="relative">
+                    <Textarea
+                      id="relato"
+                      placeholder="Conte o que aconteceu... Você pode incluir detalhes como data, local, pessoas envolvidas, testemunhas, etc. Lembre-se: quanto mais informações, melhor poderemos ajudar."
+                      value={denunciaData.relato}
+                      onChange={(e) => setDenunciaData(prev => ({ ...prev, relato: e.target.value }))}
+                      className="min-h-[180px] resize-none bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-200 hover:border-purple-400 focus:border-purple-500 transition-all duration-300 rounded-xl p-4 text-base"
+                      maxLength={2000}
+                    />
+                    <div className="absolute bottom-3 right-3">
+                      <span className="text-xs text-muted-foreground bg-white/80 px-2 py-1 rounded-full">
+                        {denunciaData.relato.length}/2000
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Opções de anexos */}
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold flex items-center space-x-2">
+                    <Upload className="text-orange-500" size={18} />
+                    <span>Evidências (Opcional)</span>
+                  </Label>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Botão Câmera */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCameraCapture}
+                      className="h-16 bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-200 transition-all duration-300 rounded-xl flex flex-col items-center justify-center space-y-1"
+                    >
+                      <Camera className="text-orange-500" size={20} />
+                      <span className="text-xs font-medium">Foto</span>
+                    </Button>
+
+                    {/* Botão Galeria */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleFileSelect}
+                      className="h-16 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-200 transition-all duration-300 rounded-xl flex flex-col items-center justify-center space-y-1"
+                    >
+                      <FileImage className="text-blue-500" size={20} />
+                      <span className="text-xs font-medium">Galeria</span>
+                    </Button>
+
+                    {/* Botão Gravação */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={isRecording ? stopRecording : startRecording}
+                      className={`h-16 border-2 transition-all duration-300 rounded-xl flex flex-col items-center justify-center space-y-1 ${
+                        isRecording 
+                          ? 'bg-gradient-to-r from-red-50 to-red-100 border-red-400 hover:bg-red-200' 
+                          : 'bg-gradient-to-r from-green-50 to-green-100 border-green-200 hover:border-green-400 hover:bg-green-200'
+                      }`}
+                    >
+                      {isRecording ? (
+                        <>
+                          <Pause className="text-red-500" size={20} />
+                          <span className="text-xs font-medium">{formatRecordingTime(recordingTime)}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="text-green-500" size={20} />
+                          <span className="text-xs font-medium">Áudio</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Arquivos anexados */}
+                  {mediaFiles.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-sm text-muted-foreground">Arquivos anexados:</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {mediaFiles.map((file) => (
+                          <div
+                            key={file.id}
+                            className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200"
+                          >
+                            {file.type === 'image' ? (
+                              <FileImage className="text-blue-500" size={16} />
+                            ) : (
+                              <FileAudio className="text-green-500" size={16} />
+                            )}
+                            <span className="flex-1 text-sm truncate">{file.name}</span>
+                            {file.type === 'audio' && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => playingAudio === file.id ? pauseAudio() : playAudio(file.url, file.id)}
+                                className="h-8 w-8 p-0"
+                              >
+                                {playingAudio === file.id ? (
+                                  <Pause className="text-green-500" size={14} />
+                                ) : (
+                                  <Play className="text-green-500" size={14} />
+                                )}
+                              </Button>
+                            )}
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
-                              onClick={() => playingAudio === file.id ? pauseAudio() : playAudio(file.url, file.id)}
-                              className="h-8 w-8 p-0"
+                              onClick={() => removeMediaFile(file.id)}
+                              className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
                             >
-                              {playingAudio === file.id ? (
-                                <Pause className="text-green-500" size={14} />
-                              ) : (
-                                <Play className="text-green-500" size={14} />
-                              )}
+                              <X size={14} />
                             </Button>
-                          )}
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeMediaFile(file.id)}
-                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                          >
-                            <X size={14} />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Botão de envio */}
-              <div className="pt-6">
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full h-14 bg-gradient-emergency hover:bg-gradient-emergency/90 text-white font-semibold text-lg rounded-xl shadow-strong transition-all duration-300 transform hover:scale-[1.02]"
-                >
-                  {isSubmitting ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Enviando...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <Send size={20} />
-                      <span>Enviar Denúncia Anônima</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+                </div>
 
-        {/* Inputs ocultos para arquivos */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,audio/*"
-          multiple
-          onChange={(e) => e.target.files && processFiles(e.target.files)}
-          className="hidden"
-        />
-        <input
-          ref={cameraInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={(e) => e.target.files && processFiles(e.target.files)}
-          className="hidden"
-        />
+                {/* Botão de envio */}
+                <div className="pt-6">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full h-14 bg-gradient-emergency hover:bg-gradient-emergency/90 text-white font-semibold text-lg rounded-xl shadow-strong transition-all duration-300 transform hover:scale-[1.02]"
+                  >
+                    {isSubmitting ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Enviando...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <Send size={20} />
+                        <span>Enviar Denúncia Anônima</span>
+                      </div>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Inputs ocultos para arquivos */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,audio/*"
+            multiple
+            onChange={(e) => e.target.files && processFiles(e.target.files)}
+            className="hidden"
+          />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={(e) => e.target.files && processFiles(e.target.files)}
+            className="hidden"
+          />
+        </div>
       </div>
+
+      {/* Modal de Confirmação */}
+      {denunciaConfirmada && (
+        <DenunciaConfirmModal
+          isOpen={showConfirmModal}
+          onClose={handleCloseConfirmModal}
+          denunciaId={denunciaConfirmada.id}
+          tipoViolencia={denunciaConfirmada.tipo}
+        />
+      )}
     </div>
   );
 };
