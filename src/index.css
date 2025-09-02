@@ -89,27 +89,27 @@ All colors MUST be HSL.
     --popover: 280 20% 10%;
     --popover-foreground: 280 10% 95%;
 
-    --primary: 280 80% 70%;
+    --primary: 280 85% 75%;         /* Brighter purple for dark mode */
     --primary-foreground: 280 25% 8%;
-    --primary-light: 280 70% 60%;
-    --primary-lighter: 280 50% 80%;
+    --primary-light: 280 75% 65%;    /* Brighter medium purple */
+    --primary-lighter: 280 60% 85%;  /* Brighter light purple */
 
     --secondary: 280 15% 20%;
-    --secondary-foreground: 280 80% 70%;
+    --secondary-foreground: 280 85% 75%;
 
     --muted: 280 15% 15%;
     --muted-foreground: 280 20% 65%;
 
-    --accent: 280 50% 30%;
-    --accent-foreground: 280 80% 70%;
+    --accent: 280 60% 35%;           /* Brighter accent */
+    --accent-foreground: 280 85% 75%;
 
-    --emergency: 0 85% 60%;
+    --emergency: 0 90% 65%;
     --emergency-foreground: 0 0% 100%;
 
-    --success: 142 76% 36%;
+    --success: 142 80% 45%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 38 95% 55%;
     --warning-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
@@ -117,11 +117,11 @@ All colors MUST be HSL.
 
     --border: 280 15% 20%;
     --input: 280 15% 15%;
-    --ring: 280 80% 70%;
+    --ring: 280 85% 75%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(280 80% 70%), hsl(280 70% 60%));
+    --gradient-primary: linear-gradient(135deg, hsl(280 85% 75%), hsl(280 75% 65%));
     --gradient-soft: linear-gradient(180deg, hsl(280 20% 12%), hsl(280 15% 15%));
-    --gradient-emergency: linear-gradient(135deg, hsl(0 85% 60%), hsl(15 80% 55%));
+    --gradient-emergency: linear-gradient(135deg, hsl(0 90% 65%), hsl(15 85% 60%));
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;

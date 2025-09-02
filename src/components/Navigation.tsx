@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, FileText, BookOpen, Phone, Menu, X, Info } from "lucide-react";
+import { Home, FileText, BookOpen, Phone, Menu, X, Info, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import AboutModal from "./AboutModal";
@@ -28,11 +28,15 @@ const Navigation = () => {
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">SV</span>
+            <Link to="/" className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-soft overflow-hidden">
+                <img 
+                  src="/logo-sos-voz-feminina.png" 
+                  alt="SOS Voz Feminina" 
+                  className="w-10 h-10 object-contain"
+                />
               </div>
-              <span className="font-bold text-lg text-primary">SOS Voz Feminina</span>
+              <span className="font-bold text-xl text-primary">SOS Voz Feminina</span>
             </Link>
 
             {/* Desktop Navigation */}

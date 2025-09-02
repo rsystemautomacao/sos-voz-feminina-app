@@ -51,9 +51,17 @@ const AdminConfiguracoes = () => {
     }
   }, []);
 
-  const loadData = () => {
-    setUsers(adminService.getUsers());
-    setLogs(adminService.getLogs());
+  const loadData = async () => {
+    try {
+      const [usersData, logsData] = await Promise.all([
+        adminService.getUsers(),
+        adminService.getLogs()
+      ]);
+      setUsers(usersData);
+      setLogs(logsData);
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+    }
   };
 
   const handleCreateInvite = async () => {
@@ -66,7 +74,8 @@ const AdminConfiguracoes = () => {
       return;
     }
 
-    if (!adminService.canInviteUsers(currentAdminEmail)) {
+    const canInvite = await adminService.canInviteUsers(currentAdminEmail);
+    if (!canInvite) {
       toast({
         title: "Permissão negada",
         description: "Apenas super administradores podem convidar usuários.",
@@ -77,8 +86,8 @@ const AdminConfiguracoes = () => {
 
     setIsInviting(true);
     
-    try {
-      const invite = adminService.createInvite(inviteEmail, currentAdminEmail);
+         try {
+       const invite = await adminService.createInvite(inviteEmail, currentAdminEmail);
       
       // Gerar link de convite
       const inviteLink = `${window.location.origin}/admin/register?token=${invite.token}`;
@@ -106,7 +115,8 @@ const AdminConfiguracoes = () => {
   };
 
   const handleDeleteUser = async (user: AdminUser) => {
-    if (!adminService.canInviteUsers(currentAdminEmail)) {
+    const canInvite = await adminService.canInviteUsers(currentAdminEmail);
+    if (!canInvite) {
       toast({
         title: "Permissão negada",
         description: "Apenas super administradores podem excluir usuários.",
@@ -124,8 +134,8 @@ const AdminConfiguracoes = () => {
       return;
     }
 
-    try {
-      adminService.deleteUser(user.email, currentAdminEmail);
+         try {
+       await adminService.deleteUser(user.email, currentAdminEmail);
       
       toast({
         title: "Usuário excluído",
@@ -154,7 +164,8 @@ const AdminConfiguracoes = () => {
   };
 
   const handleDeleteInvite = async (invite: any) => {
-    if (!adminService.canInviteUsers(currentAdminEmail)) {
+    const canInvite = await adminService.canInviteUsers(currentAdminEmail);
+    if (!canInvite) {
       toast({
         title: "Permissão negada",
         description: "Apenas super administradores podem excluir convites.",
@@ -163,8 +174,8 @@ const AdminConfiguracoes = () => {
       return;
     }
 
-    try {
-      adminService.deleteInvite(invite.id, currentAdminEmail);
+         try {
+       await adminService.deleteInvite(invite.id, currentAdminEmail);
       
       toast({
         title: "Convite excluído",
@@ -183,7 +194,8 @@ const AdminConfiguracoes = () => {
   };
 
   const handleResetPassword = async (user: AdminUser) => {
-    if (!adminService.canInviteUsers(currentAdminEmail)) {
+    const canInvite = await adminService.canInviteUsers(currentAdminEmail);
+    if (!canInvite) {
       toast({
         title: "Permissão negada",
         description: "Apenas super administradores podem resetar senhas.",
@@ -196,12 +208,9 @@ const AdminConfiguracoes = () => {
     
     try {
       console.log('Criando reset de senha para:', user.email);
-      const resetLink = adminService.createPasswordReset(user.email, currentAdminEmail);
+      const resetLink = await adminService.createPasswordReset(user.email, currentAdminEmail);
       
       console.log('Link criado:', resetLink);
-      
-      // Debug: verificar se foi salvo
-      adminService.debugPasswordResets();
       
       // Copiar para clipboard
       await navigator.clipboard.writeText(resetLink);
@@ -270,8 +279,31 @@ const AdminConfiguracoes = () => {
     return true;
   });
 
-  const isSuperAdmin = adminService.isSuperAdmin(currentAdminEmail);
-  const canViewLogs = adminService.canViewLogs(currentAdminEmail);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [canViewLogs, setCanViewLogs] = useState(false);
+  const [invites, setInvites] = useState<any[]>([]);
+
+  // Verificar permissões e carregar convites quando o componente carrega
+  useEffect(() => {
+    const checkPermissionsAndLoadInvites = async () => {
+      try {
+        const [superAdmin, viewLogs, invitesData] = await Promise.all([
+          adminService.isSuperAdmin(currentAdminEmail),
+          adminService.canViewLogs(currentAdminEmail),
+          adminService.getInvites()
+        ]);
+        setIsSuperAdmin(superAdmin);
+        setCanViewLogs(viewLogs);
+        setInvites(invitesData);
+      } catch (error) {
+        console.error('Erro ao verificar permissões ou carregar convites:', error);
+      }
+    };
+
+    if (currentAdminEmail) {
+      checkPermissionsAndLoadInvites();
+    }
+  }, [currentAdminEmail]);
 
   return (
     <div className="min-h-screen bg-gradient-soft">
@@ -434,9 +466,9 @@ const AdminConfiguracoes = () => {
                    </CardHeader>
                    <CardContent>
                      <div className="space-y-4">
-                       {adminService.getInvites()
-                         .filter(invite => !invite.isUsed && new Date(invite.expiresAt) > new Date())
-                         .map((invite) => (
+                                               {invites
+                          .filter(invite => !invite.isUsed && new Date(invite.expiresAt) > new Date())
+                          .map((invite) => (
                            <div
                              key={invite.id}
                              className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
@@ -474,7 +506,7 @@ const AdminConfiguracoes = () => {
                              </div>
                            </div>
                          ))}
-                       {adminService.getInvites().filter(invite => !invite.isUsed && new Date(invite.expiresAt) > new Date()).length === 0 && (
+                                               {invites.filter(invite => !invite.isUsed && new Date(invite.expiresAt) > new Date()).length === 0 && (
                          <p className="text-center text-muted-foreground py-8">
                            Nenhum convite ativo no momento
                          </p>
@@ -498,9 +530,9 @@ const AdminConfiguracoes = () => {
                    </CardHeader>
                    <CardContent>
                      <div className="space-y-4">
-                       {adminService.getInvites()
-                         .filter(invite => !invite.isUsed && new Date(invite.expiresAt) <= new Date())
-                         .map((invite) => (
+                                               {invites
+                          .filter(invite => !invite.isUsed && new Date(invite.expiresAt) <= new Date())
+                          .map((invite) => (
                            <div
                              key={invite.id}
                              className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg"

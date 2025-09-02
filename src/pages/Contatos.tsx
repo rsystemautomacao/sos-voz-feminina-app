@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { Phone, Mail, MapPin, Clock, Shield, AlertTriangle, Users, Heart, ExternalLink } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Shield, AlertTriangle, Users, Heart, ExternalLink, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
-import ManualSearchModal from "@/components/ManualSearchModal";
+import LocationPermissionModal from "@/components/LocationPermissionModal";
 
 const Contatos = () => {
-  const [showManualSearchModal, setShowManualSearchModal] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
 
-  const handleDenyLocation = () => {
-    setShowManualSearchModal(true);
+  const handleLocationPermission = () => {
+    setShowLocationModal(true);
   };
 
   const emergencyContacts = [
@@ -42,37 +42,53 @@ const Contatos = () => {
       name: "Centro de Referência da Mulher",
       description: "Acolhimento e orientação jurídica",
       services: ["Acolhimento", "Orientação Jurídica", "Apoio Psicológico"],
-      type: "support"
+      type: "support",
+      website: "https://www.gov.br/mdh/pt-br",
+      phone: "180",
+      address: "Centros em todo o Brasil"
     },
     {
       name: "Delegacia da Mulher (DEAM)",
       description: "Registro de ocorrências e investigações",
       services: ["Registro de BO", "Investigação", "Medidas Protetivas"],
-      type: "legal"
+      type: "legal",
+      website: "https://www.gov.br/pf/pt-br",
+      phone: "190",
+      address: "Em todo o Brasil"
     },
     {
       name: "Casa Abrigo",
       description: "Acolhimento temporário para mulheres em risco",
       services: ["Acolhimento", "Proteção", "Reconstrução de Vida"],
-      type: "shelter"
+      type: "shelter",
+      website: "https://www.gov.br/mdh/pt-br",
+      phone: "180",
+      address: "Locais sigilosos"
     },
     {
       name: "Serviço de Psicologia",
       description: "Apoio emocional e saúde mental",
       services: ["Terapia", "Apoio Emocional", "Processamento de Trauma"],
-      type: "health"
+      type: "health",
+      isLocationBased: true
     },
     {
       name: "Assistência Social",
       description: "Orientação sobre benefícios e recursos",
       services: ["Benefícios", "Orientação", "Inclusão Social"],
-      type: "social"
+      type: "social",
+      website: "https://www.gov.br/cidadania/pt-br",
+      phone: "121",
+      address: "CRAS mais próximo"
     },
     {
       name: "Defensoria Pública",
       description: "Assistência jurídica gratuita",
       services: ["Assessoria Jurídica", "Representação Legal", "Orientação"],
-      type: "legal"
+      type: "legal",
+      website: "https://www.defensoria.sp.def.br",
+      phone: "129",
+      address: "Defensoria mais próxima"
     }
   ];
 
@@ -97,6 +113,42 @@ const Contatos = () => {
       case 'health': return Heart;
       case 'social': return Users;
       default: return Shield;
+    }
+  };
+
+  const openMapsSearch = () => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(userAgent);
+    const isAndroid = /android/.test(userAgent);
+    
+    try {
+      if (isIOS) {
+        // Tenta abrir Apple Maps no iOS
+        const appleMapsUrl = `maps://maps.apple.com/?q=psicólogo`;
+        window.location.href = appleMapsUrl;
+        
+        // Fallback para web se o app não abrir
+        setTimeout(() => {
+          window.open(`https://maps.apple.com/?q=psicólogo`, '_blank');
+        }, 1000);
+      } else if (isAndroid) {
+        // Abre Google Maps no Android
+        const googleMapsUrl = `https://www.google.com/maps/search/psicólogo`;
+        window.open(googleMapsUrl, '_blank');
+      } else {
+        // Abre Google Maps no navegador desktop
+        const googleMapsUrl = `https://www.google.com/maps/search/psicólogo`;
+        window.open(googleMapsUrl, '_blank');
+      }
+      
+      // Fecha o modal automaticamente após abrir o mapa
+      setShowLocationModal(false);
+    } catch (error) {
+      console.error('Erro ao abrir mapas:', error);
+      // Fallback para Google Maps web
+      window.open(`https://www.google.com/maps/search/psicólogo`, '_blank');
+      // Fecha o modal mesmo em caso de erro
+      setShowLocationModal(false);
     }
   };
 
@@ -189,18 +241,56 @@ const Contatos = () => {
                             </div>
                           ))}
                         </div>
-                        <Button 
-                          variant="outline" 
-                          className="w-full mt-4"
-                          onClick={() => {
-                            // Aqui você pode adicionar lógica para buscar o contato mais próximo
-                            // Por enquanto, vamos mostrar o modal de busca manual
-                            handleDenyLocation();
-                          }}
-                        >
-                          <MapPin size={16} className="mr-2" />
-                          Encontrar Mais Próximo
-                        </Button>
+                        
+                        {/* Contatos específicos para cada serviço */}
+                        {!service.isLocationBased && (
+                          <div className="space-y-2 pt-2 border-t border-border">
+                            {service.website && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full"
+                                onClick={() => window.open(service.website, '_blank')}
+                              >
+                                <Globe size={14} className="mr-2" />
+                                Visitar Site
+                              </Button>
+                            )}
+                            {service.phone && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full"
+                                onClick={() => window.open(`tel:${service.phone}`)}
+                              >
+                                <Phone size={14} className="mr-2" />
+                                {service.phone}
+                              </Button>
+                            )}
+                            {service.address && (
+                              <div className="text-xs text-muted-foreground text-center">
+                                <MapPin size={12} className="inline mr-1" />
+                                {service.address}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        {/* Botão especial para psicologia */}
+                        {service.isLocationBased && (
+                          <div className="pt-2 border-t border-border">
+                            <Button 
+                              className="w-full bg-pink-600 hover:bg-pink-700 text-white"
+                              onClick={handleLocationPermission}
+                            >
+                              <MapPin size={16} className="mr-2" />
+                              Encontrar Psicólogos Próximos
+                            </Button>
+                            <p className="text-xs text-muted-foreground text-center mt-2">
+                              Usa sua localização para encontrar os mais próximos
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -269,10 +359,13 @@ const Contatos = () => {
         </div>
       </div>
 
-      {/* Manual Search Modal */}
-      <ManualSearchModal 
-        isOpen={showManualSearchModal} 
-        onClose={() => setShowManualSearchModal(false)} 
+      {/* Location Permission Modal */}
+      <LocationPermissionModal 
+        isOpen={showLocationModal} 
+        onClose={() => setShowLocationModal(false)}
+        onConfirm={openMapsSearch}
+        title="Encontrar Psicólogos Próximos"
+        description="Para encontrar os psicólogos mais próximos da sua localização, precisamos acessar sua localização. Isso abrirá o app de mapas do seu dispositivo para buscar por 'psicólogo' na sua área."
       />
     </div>
   );

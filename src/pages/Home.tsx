@@ -26,10 +26,14 @@ const Home = () => {
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="w-24 h-24 bg-gradient-emergency rounded-full flex items-center justify-center mx-auto mb-6 shadow-strong">
-              <Shield className="text-emergency-foreground" size={48} />
+            <div className="w-32 h-32 rounded-full flex items-center justify-center mx-auto mb-8 shadow-strong overflow-hidden">
+              <img 
+                src="/logo-sos-voz-feminina.png" 
+                alt="SOS Voz Feminina" 
+                className="w-32 h-32 object-contain"
+              />
             </div>
-            <h1 className="text-5xl font-bold text-foreground mb-4">
+            <h1 className="text-6xl font-bold text-primary mb-6">
               SOS Voz Feminina
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">

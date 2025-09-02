@@ -24,63 +24,35 @@ const AdminResetPassword = () => {
   const token = searchParams.get('token');
 
   useEffect(() => {
-    if (!token) {
-      toast({
-        title: "Token inválido",
-        description: "Link de reset de senha inválido.",
-        variant: "destructive",
-      });
-      navigate("/login");
-      return;
-    }
-
-    // Debug: verificar todos os resets
-    adminService.debugPasswordResets();
-
-    // Validar token
-    let resetData = adminService.validatePasswordReset(token);
-    
-    // Se não encontrou no storage, tentar usar dados de debug da URL
-    if (!resetData) {
-      const debugParam = searchParams.get('debug');
-      if (debugParam) {
-        try {
-          const debugData = JSON.parse(atob(debugParam));
-          console.log('Usando dados de debug da URL:', debugData);
-          
-          // Verificar se o token da URL corresponde ao token de debug
-          if (debugData.token === token) {
-            const now = new Date();
-            const expiresAt = new Date(debugData.expiresAt);
-            
-            if (expiresAt.getTime() > now.getTime()) {
-              resetData = {
-                userEmail: debugData.userEmail,
-                expiresAt: debugData.expiresAt
-              };
-              console.log('Token válido usando dados de debug');
-            } else {
-              console.log('Token expirado usando dados de debug');
-            }
-          }
-        } catch (error) {
-          console.error('Erro ao decodificar dados de debug:', error);
-        }
+    const validateToken = async () => {
+      if (!token) {
+        toast({
+          title: "Token inválido",
+          description: "Link de reset de senha inválido.",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
       }
-    }
-    
-    if (!resetData) {
-      toast({
-        title: "Token expirado",
-        description: "Este link de reset de senha expirou ou é inválido.",
-        variant: "destructive",
-      });
-      navigate("/login");
-      return;
-    }
 
-    setIsValidToken(true);
-    setUserEmail(resetData.userEmail);
+      // Validar token
+      let resetData = await adminService.validatePasswordReset(token);
+      
+      if (!resetData) {
+        toast({
+          title: "Token expirado",
+          description: "Este link de reset de senha expirou ou é inválido.",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
+
+      setIsValidToken(true);
+      setUserEmail(resetData.userEmail);
+    };
+
+    validateToken();
   }, [token, searchParams, navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,7 +88,7 @@ const AdminResetPassword = () => {
     setIsLoading(true);
     
     try {
-      adminService.applyPasswordReset(token, password);
+      await adminService.applyPasswordReset(token, password);
       
       toast({
         title: "Senha alterada!",

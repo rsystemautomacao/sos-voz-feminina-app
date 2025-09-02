@@ -11,21 +11,28 @@ import {
 interface LocationPermissionModalProps {
   isOpen: boolean;
   onConfirm: () => void;
-  onDeny: () => void;
   onClose: () => void;
+  title?: string;
+  description?: string;
 }
 
-const LocationPermissionModal = ({ isOpen, onConfirm, onDeny, onClose }: LocationPermissionModalProps) => {
+const LocationPermissionModal = ({ 
+  isOpen, 
+  onConfirm, 
+  onClose, 
+  title = "Permissão de Localização",
+  description = "Para encontrar psicólogos próximos à sua localização"
+}: LocationPermissionModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <MapPin className="text-primary" size={20} />
-            <span>Permissão de Localização</span>
+            <span>{title}</span>
           </DialogTitle>
           <DialogDescription>
-            Para encontrar psicólogos próximos à sua localização
+            {description}
           </DialogDescription>
         </DialogHeader>
 
@@ -68,7 +75,10 @@ const LocationPermissionModal = ({ isOpen, onConfirm, onDeny, onClose }: Locatio
           {/* Botões de ação */}
           <div className="flex space-x-3 pt-2">
             <Button
-              onClick={onConfirm}
+              onClick={() => {
+                onConfirm();
+                onClose(); // Fecha o modal após executar a ação
+              }}
               className="flex-1"
             >
               <MapPin size={16} className="mr-2" />
@@ -76,19 +86,8 @@ const LocationPermissionModal = ({ isOpen, onConfirm, onDeny, onClose }: Locatio
             </Button>
             <Button
               variant="outline"
-              onClick={onDeny}
-              className="flex-1"
-            >
-              Buscar Manualmente
-            </Button>
-          </div>
-
-          <div className="text-center">
-            <Button
-              variant="ghost"
-              size="sm"
               onClick={onClose}
-              className="text-xs text-muted-foreground"
+              className="flex-1"
             >
               Cancelar
             </Button>

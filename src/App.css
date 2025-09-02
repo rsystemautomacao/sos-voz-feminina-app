@@ -40,3 +40,63 @@
 .read-the-docs {
   color: #888;
 }
+
+/* SOS Voz Feminina - Estilos personalizados para design mais acolhedor */
+.gradient-primary {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+}
+
+.gradient-soft {
+  background: linear-gradient(180deg, #f8fafc, #f1f5f9);
+}
+
+.gradient-emergency {
+  background: linear-gradient(135deg, #ef4444, #f97316);
+}
+
+.shadow-soft {
+  box-shadow: 0 6px 25px rgba(139, 92, 246, 0.2);
+}
+
+.shadow-strong {
+  box-shadow: 0 12px 35px rgba(139, 92, 246, 0.3);
+}
+
+/* Cores mais vibrantes e acolhedoras */
+.text-primary {
+  color: #8b5cf6;
+}
+
+.text-primary-foreground {
+  color: #ffffff;
+}
+
+.bg-primary {
+  background-color: #8b5cf6;
+}
+
+.bg-primary-foreground {
+  background-color: #ffffff;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+}
+
+.bg-gradient-soft {
+  background: linear-gradient(180deg, #f8fafc, #f1f5f9);
+}
+
+.bg-gradient-emergency {
+  background: linear-gradient(135deg, #ef4444, #f97316);
+}
+
+/* Hover effects mais suaves */
+.hover-scale {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.25);
+}
