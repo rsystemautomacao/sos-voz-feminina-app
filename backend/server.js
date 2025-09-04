@@ -26,8 +26,29 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 
 // Configuração do CORS
+const allowedOrigins = [
+  'http://localhost:8080',
+  'http://localhost:5173',
+  'https://sos-voz-feminina.vercel.app'
+];
+
+// Adicionar CORS_ORIGIN se estiver definido
+if (process.env.CORS_ORIGIN) {
+  allowedOrigins.push(process.env.CORS_ORIGIN);
+}
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:8080',
+  origin: (origin, callback) => {
+    // Permitir requisições sem origin (ex: mobile apps, Postman)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    console.log('🚫 CORS bloqueado para origin:', origin);
+    return callback(new Error('Não permitido pelo CORS'), false);
+  },
   credentials: true
 }));
 
