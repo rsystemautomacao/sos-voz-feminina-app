@@ -257,8 +257,12 @@ const Admin = () => {
       audioRef.pause();
     }
 
-    // Usar dados base64 diretamente do banco
-    const audio = new Audio(evidencia.dados);
+    // Detectar se é URL ou base64
+    const audioUrl = evidencia.dados.startsWith('/uploads/') 
+      ? `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${evidencia.dados}`
+      : evidencia.dados;
+    
+    const audio = new Audio(audioUrl);
     setAudioRef(audio);
     
     audio.onended = () => setPlayingAudio(null);
@@ -679,7 +683,10 @@ const Admin = () => {
                           <div className="space-y-3">
                             <div className="relative group">
                               <img 
-                                src={evidencia.dados} 
+                                src={evidencia.dados.startsWith('/uploads/') 
+                                  ? `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${evidencia.dados}`
+                                  : evidencia.dados
+                                } 
                                 alt={evidencia.nome}
                                 className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
                                 onError={(e) => {
