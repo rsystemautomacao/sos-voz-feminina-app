@@ -31,16 +31,29 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting - mais permissivo para desenvolvimento
+// Rate limiting - mais permissivo para produção
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutos
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000, // limite de 1000 requests por windowMs (desenvolvimento)
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000, // limite de 1000 requests por windowMs
   message: {
     error: 'Muitas requisições deste IP, tente novamente mais tarde.'
   },
-  // Pular rate limiting em desenvolvimento
+  // Pular rate limiting em desenvolvimento ou para rotas públicas
   skip: (req) => {
-    return process.env.NODE_ENV === 'development' && req.ip === '127.0.0.1';
+    // Pular em desenvolvimento
+    if (process.env.NODE_ENV === 'development' && req.ip === '127.0.0.1') {
+      return true;
+    }
+    
+    // Pular para rotas públicas (validação de convite, login, etc.)
+    const publicRoutes = [
+      '/api/auth/login',
+      '/api/admin/invites/validate/',
+      '/api/admin/invites/',
+      '/api/denuncias' // Rotas de denúncia são públicas
+    ];
+    
+    return publicRoutes.some(route => req.path.startsWith(route));
   }
 });
 app.use('/api/', limiter);
