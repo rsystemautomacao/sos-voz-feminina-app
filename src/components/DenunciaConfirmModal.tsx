@@ -86,7 +86,7 @@ const DenunciaConfirmModal = ({ isOpen, onClose, denunciaId, tipoViolencia }: De
           {/* Tipo de Violência */}
           <div className="space-y-1">
             <span className="text-xs font-medium text-muted-foreground">Tipo de Violência:</span>
-            <p className="text-sm capitalize">{tipoViolencia.replace('_', ' ')}</p>
+            <p className="text-sm capitalize">{tipoViolencia?.replace('_', ' ') || 'Não especificado'}</p>
           </div>
 
           {/* Próximos Passos */}

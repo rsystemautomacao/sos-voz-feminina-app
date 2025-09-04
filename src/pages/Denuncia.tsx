@@ -12,6 +12,7 @@ import Navigation from "@/components/Navigation";
 import DenunciaConfirmModal from "@/components/DenunciaConfirmModal";
 
 interface MediaFile {
+  
   id: string;
   file: File;
   type: 'image' | 'audio';
@@ -367,7 +368,7 @@ const Denuncia = () => {
                     <div className="space-y-2">
                       <Input
                         placeholder="Sua cidade"
-                        value={denunciaData.localizacao.cidade || ""}
+                        value={denunciaData.localizacao?.cidade || ""}
                         onChange={(e) => setDenunciaData(prev => ({ 
                           ...prev, 
                           localizacao: { ...prev.localizacao, cidade: e.target.value }
@@ -378,7 +379,7 @@ const Denuncia = () => {
                     <div className="space-y-2">
                       <Input
                         placeholder="Seu estado"
-                        value={denunciaData.localizacao.estado || ""}
+                        value={denunciaData.localizacao?.estado || ""}
                         onChange={(e) => setDenunciaData(prev => ({ 
                           ...prev, 
                           localizacao: { ...prev.localizacao, estado: e.target.value }
@@ -389,7 +390,7 @@ const Denuncia = () => {
                     <div className="space-y-2">
                       <Input
                         placeholder="Seu bairro"
-                        value={denunciaData.localizacao.bairro || ""}
+                        value={denunciaData.localizacao?.bairro || ""}
                         onChange={(e) => setDenunciaData(prev => ({ 
                           ...prev, 
                           localizacao: { ...prev.localizacao, bairro: e.target.value }

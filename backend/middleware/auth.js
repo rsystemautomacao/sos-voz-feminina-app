@@ -4,26 +4,36 @@ import AdminUser from '../models/AdminUser.js';
 // Middleware para verificar token JWT
 export const authenticateToken = async (req, res, next) => {
   try {
+    console.log('🔐 Verificando token de autenticação...');
+    
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
+      console.log('❌ Token não fornecido');
       return res.status(401).json({
         error: 'Token de acesso não fornecido'
       });
     }
 
+    console.log('🔑 Token recebido:', token.substring(0, 20) + '...');
+    
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('🔓 Token decodificado:', decoded);
     
     // Buscar usuário no banco
     const user = await AdminUser.findById(decoded.userId);
+    console.log('👤 Usuário encontrado no banco:', user ? 'Sim' : 'Não');
     
     if (!user || !user.isActive) {
+      console.log('❌ Usuário não encontrado ou inativo');
       return res.status(401).json({
         error: 'Usuário não encontrado ou inativo'
       });
     }
 
+    console.log('✅ Usuário autenticado:', user.email);
+    
     req.user = {
       id: user._id,
       email: user.email,
@@ -33,18 +43,20 @@ export const authenticateToken = async (req, res, next) => {
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
+      console.log('❌ Token JWT inválido');
       return res.status(401).json({
         error: 'Token inválido'
       });
     }
     
     if (error.name === 'TokenExpiredError') {
+      console.log('❌ Token JWT expirado');
       return res.status(401).json({
         error: 'Token expirado'
       });
     }
 
-    console.error('Erro na autenticação:', error);
+    console.error('💥 Erro na autenticação:', error);
     return res.status(500).json({
       error: 'Erro interno do servidor'
     });

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLocation, useNavigate } from "react-router-dom";
+import AdminNavigation from "@/components/AdminNavigation";
 
 const Sobre = () => {
   const location = useLocation();
@@ -11,19 +12,10 @@ const Sobre = () => {
 
   if (isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-soft py-8 px-4">
-        <div className="max-w-6xl mx-auto">
-          {/* Navigation */}
-          <div className="mb-8">
-            <Button
-              onClick={() => navigate('/admin')}
-              variant="outline"
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeft size={16} />
-              <span>Voltar ao Painel</span>
-            </Button>
-          </div>
+      <div className="min-h-screen bg-gradient-soft">
+        <AdminNavigation />
+        <div className="py-8 px-4">
+          <div className="max-w-6xl mx-auto">
 
           {/* Header */}
           <div className="text-center mb-12">
@@ -236,6 +228,7 @@ const Sobre = () => {
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
     );

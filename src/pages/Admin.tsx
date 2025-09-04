@@ -53,13 +53,43 @@ const Admin = () => {
   useEffect(() => {
     loadDenuncias();
     loadEstatisticas();
+    
+    // Mostrar mensagem de boas-vindas apenas no primeiro login da sessão
+    const loginTime = localStorage.getItem("adminLoginTime");
+    const hasShownWelcome = localStorage.getItem("hasShownWelcome");
+    const lastWelcomeTime = localStorage.getItem("lastWelcomeTime");
+    
+    // Verificar se é um novo login (não apenas navegação)
+    if (loginTime && (!hasShownWelcome || !lastWelcomeTime || 
+        new Date(loginTime).getTime() > parseInt(lastWelcomeTime))) {
+      
+      toast({
+        title: "🎉 Login realizado com sucesso!",
+        description: "Bem-vindo(a) ao painel administrativo!",
+        duration: 4000, // 4 segundos
+        className: "bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-600 text-white border-0 shadow-2xl rounded-xl",
+        style: {
+          background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #8b5cf6 100%)',
+          color: 'white',
+          border: 'none',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          borderRadius: '16px',
+          fontSize: '16px',
+          fontWeight: '600',
+        },
+      });
+      
+      // Marcar que já mostrou a mensagem de boas-vindas para esta sessão
+      localStorage.setItem("hasShownWelcome", "true");
+      localStorage.setItem("lastWelcomeTime", Date.now().toString());
+    }
   }, []);
 
   const loadDenuncias = async () => {
     setIsLoading(true);
     
     try {
-      const denunciasData = denunciaService.getDenuncias();
+      const denunciasData = await denunciaService.getDenuncias();
       setDenuncias(denunciasData);
       setFilteredDenuncias(denunciasData);
     } catch (error) {
@@ -92,7 +122,7 @@ const Admin = () => {
       filtered = filtered.filter(denuncia =>
         denuncia.relato.toLowerCase().includes(searchTerm.toLowerCase()) ||
         denuncia.tipoViolencia.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        denuncia.localizacao.cidade?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        denuncia.localizacao?.cidade?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         denuncia.idPublico.includes(searchTerm)
       );
     }
@@ -245,6 +275,8 @@ const Admin = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+
+
   return (
     <div className="min-h-screen bg-gradient-soft">
       <AdminNavigation />
@@ -383,7 +415,7 @@ const Admin = () => {
         ) : (
           <div className="space-y-4">
             {filteredDenuncias.map((denuncia) => (
-              <Card key={denuncia.id} className="shadow-soft hover:shadow-strong transition-shadow cursor-pointer" onClick={() => setSelectedDenuncia(denuncia)}>
+              <Card key={denuncia._id || denuncia.idPublico || denuncia.id} className="shadow-soft hover:shadow-strong transition-shadow cursor-pointer" onClick={() => setSelectedDenuncia(denuncia)}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -415,7 +447,7 @@ const Admin = () => {
                           <Calendar size={14} />
                           <span>{formatDate(denuncia.dataCriacao)}</span>
                         </div>
-                        {denuncia.localizacao.cidade && (
+                        {denuncia.localizacao?.cidade && (
                           <div className="flex items-center space-x-1">
                             <MapPin size={14} />
                             <span>{denuncia.localizacao.cidade}, {denuncia.localizacao.estado}</span>
@@ -486,7 +518,7 @@ const Admin = () => {
                 <p>{selectedDenuncia.dataOcorrido}</p>
               </div>
               
-              {selectedDenuncia.localizacao.cidade && (
+              {selectedDenuncia.localizacao?.cidade && (
                 <div>
                   <h4 className="font-semibold mb-2">Localização</h4>
                   <p>{selectedDenuncia.localizacao.cidade}, {selectedDenuncia.localizacao.estado}</p>
@@ -526,8 +558,8 @@ const Admin = () => {
                 <div>
                   <h4 className="font-semibold mb-2">Evidências</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {selectedDenuncia.evidencias.map((evidencia) => (
-                      <div key={evidencia.id} className="border rounded-lg p-4">
+                    {selectedDenuncia.evidencias.map((evidencia, index) => (
+                      <div key={evidencia.id || `evidencia-${index}`} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-2">
                             {evidencia.tipo === 'image' ? (
@@ -599,14 +631,14 @@ const Admin = () => {
               
               <div className="flex flex-wrap gap-2 pt-4">
                 <Button
-                  onClick={() => updateDenunciaStatus(selectedDenuncia.id, 'analisando')}
+                  onClick={() => updateDenunciaStatus(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'analisando')}
                   disabled={selectedDenuncia.status === 'analisando'}
                   size="sm"
                 >
                   Marcar como Em Análise
                 </Button>
                 <Button
-                  onClick={() => updateDenunciaStatus(selectedDenuncia.id, 'resolvido')}
+                  onClick={() => updateDenunciaStatus(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'resolvido')}
                   disabled={selectedDenuncia.status === 'resolvido'}
                   size="sm"
                   variant="outline"
@@ -614,7 +646,7 @@ const Admin = () => {
                   Marcar como Resolvida
                 </Button>
                 <Button
-                  onClick={() => updateDenunciaStatus(selectedDenuncia.id, 'arquivado')}
+                  onClick={() => updateDenunciaStatus(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'arquivado')}
                   disabled={selectedDenuncia.status === 'arquivado'}
                   size="sm"
                   variant="outline"

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#8B5CF6" stroke="#6D28D9" stroke-width="3"/>
+  
+  <!-- Inner circle with gradient -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EC4899;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <circle cx="100" cy="100" r="75" fill="url(#gradient)" opacity="0.9"/>
+  
+  <!-- Shield icon -->
+  <path d="M100 30 L130 45 L130 85 C130 110 115 130 100 140 C85 130 70 110 70 85 L70 45 Z" 
+        fill="white" opacity="0.9"/>
+  
+  <!-- Heart in center -->
+  <path d="M100 80 C95 70 85 70 85 80 C85 85 100 100 100 100 C100 100 115 85 115 80 C115 70 105 70 100 80 Z" 
+        fill="#EC4899"/>
+  
+  <!-- Voice waves -->
+  <path d="M65 95 Q75 85 85 95" stroke="white" stroke-width="3" fill="none" opacity="0.8"/>
+  <path d="M115 95 Q125 85 135 95" stroke="white" stroke-width="3" fill="none" opacity="0.8"/>
+  
+  <!-- Text -->
+  <text x="100" y="170" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">
+    SOS VOZ
+  </text>
+  <text x="100" y="185" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10">
+    FEMININA
+  </text>
+</svg>

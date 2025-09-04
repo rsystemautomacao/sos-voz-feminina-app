@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Eye, EyeOff, Shield, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,14 +13,63 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRateLimited, setIsRateLimited] = useState(false);
+  const [rateLimitTime, setRateLimitTime] = useState<number | null>(null);
   
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Verificar se está em rate limiting
+  React.useEffect(() => {
+    const checkRateLimit = () => {
+      const lastAttempt = localStorage.getItem('lastLoginAttempt');
+      const rateLimitUntil = localStorage.getItem('rateLimitUntil');
+      
+      if (lastAttempt && rateLimitUntil) {
+        const now = Date.now();
+        const until = parseInt(rateLimitUntil);
+        
+        if (now < until) {
+          setIsRateLimited(true);
+          setRateLimitTime(until);
+          
+          // Atualizar contador a cada segundo
+          const interval = setInterval(() => {
+            const currentTime = Date.now();
+            if (currentTime >= until) {
+              setIsRateLimited(false);
+              setRateLimitTime(null);
+              clearInterval(interval);
+            }
+          }, 1000);
+          
+          return () => clearInterval(interval);
+        } else {
+          // Rate limit expirou
+          localStorage.removeItem('lastLoginAttempt');
+          localStorage.removeItem('rateLimitUntil');
+          setIsRateLimited(false);
+          setRateLimitTime(null);
+        }
+      }
+    };
+    
+    checkRateLimit();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email.trim() || !password.trim()) {
+    if (isRateLimited) {
+      toast({
+        title: "Muitas tentativas",
+        description: "Aguarde antes de tentar novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!email || !password) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
@@ -32,26 +81,25 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const user = adminService.authenticate(email, password);
+      const user = await adminService.authenticate(email, password);
       
       if (user) {
-        // Criar token de autenticação
-        const tokenData = {
-          email: user.email,
-          role: user.role,
-          loginTime: new Date().toISOString()
-        };
-        
-        const token = btoa(JSON.stringify(tokenData));
-        localStorage.setItem("adminToken", token);
-        localStorage.setItem("adminLoginTime", new Date().toISOString());
-        
-        toast({
-          title: "Login realizado com sucesso!",
-          description: `Bem-vindo(a), ${user.email}`,
-        });
-        
-        navigate("/admin");
+        // Salvar o token JWT retornado pelo backend
+        const token = user.token || user.accessToken;
+        if (token) {
+          localStorage.setItem("adminToken", token);
+          localStorage.setItem("adminLoginTime", new Date().toISOString());
+          
+          toast({
+            title: "Login realizado com sucesso!",
+            description: `Bem-vindo(a), ${user.email}`,
+            duration: 2000, // 2 segundos
+          });
+          
+          navigate("/admin");
+        } else {
+          throw new Error("Token não recebido do servidor");
+        }
       } else {
         toast({
           title: "Credenciais inválidas",
@@ -61,11 +109,31 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Erro no login:', error);
-      toast({
-        title: "Erro no login",
-        description: "Ocorreu um erro durante o login. Tente novamente.",
-        variant: "destructive",
-      });
+      
+      // Verificar se é erro de rate limiting
+      if (error instanceof Error && error.message.includes('Muitas requisições')) {
+        const now = Date.now();
+        const rateLimitDuration = 5 * 60 * 1000; // 5 minutos
+        const until = now + rateLimitDuration;
+        
+        localStorage.setItem('lastLoginAttempt', now.toString());
+        localStorage.setItem('rateLimitUntil', until.toString());
+        
+        setIsRateLimited(true);
+        setRateLimitTime(until);
+        
+        toast({
+          title: "Muitas tentativas",
+          description: "Aguarde 5 minutos antes de tentar novamente.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro no login",
+          description: "Ocorreu um erro durante o login. Tente novamente.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -96,6 +164,26 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="px-8 pb-8">
+            {/* Rate Limit Warning */}
+            {isRateLimited && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <Shield className="text-red-500" size={20} />
+                  <div>
+                    <h4 className="font-semibold text-red-700 text-sm">
+                      Muitas tentativas de login
+                    </h4>
+                    <p className="text-xs text-red-600">
+                      {rateLimitTime 
+                        ? `Aguarde ${Math.ceil((rateLimitTime - Date.now()) / 1000)} segundos antes de tentar novamente.`
+                        : 'Aguarde antes de tentar novamente.'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-6">
               
               {/* Email */}
@@ -153,13 +241,27 @@ const Login = () => {
               <div className="pt-4">
                 <Button
                   type="submit"
-                  disabled={isLoading}
-                  className="w-full h-12 bg-gradient-primary hover:bg-gradient-primary/90 text-white font-semibold text-lg rounded-xl shadow-strong transition-all duration-300 transform hover:scale-[1.02]"
+                  disabled={isLoading || isRateLimited}
+                  className={`w-full h-12 font-semibold text-lg rounded-xl shadow-strong transition-all duration-300 transform hover:scale-[1.02] ${
+                    isRateLimited 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-gradient-primary hover:bg-gradient-primary/90 text-white hover:scale-[1.02]'
+                  }`}
                 >
                   {isLoading ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       <span>Entrando...</span>
+                    </div>
+                  ) : isRateLimited ? (
+                    <div className="flex items-center space-x-2">
+                      <Shield size={20} />
+                      <span>
+                        {rateLimitTime 
+                          ? `Aguarde ${Math.ceil((rateLimitTime - Date.now()) / 1000)}s` 
+                          : 'Muitas tentativas'
+                        }
+                      </span>
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">

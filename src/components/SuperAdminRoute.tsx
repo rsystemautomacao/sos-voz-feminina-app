@@ -12,10 +12,11 @@ const SuperAdminRoute = ({ children }: SuperAdminRouteProps) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const checkSuperAdmin = () => {
+    const checkSuperAdmin = async () => {
       try {
-        const token = localStorage.getItem("adminToken");
-        if (!token) {
+        // Usar o email armazenado no localStorage durante o login
+        const storedEmail = localStorage.getItem("adminEmail");
+        if (!storedEmail) {
           toast({
             title: "Acesso negado",
             description: "Você precisa fazer login para acessar esta página.",
@@ -25,8 +26,7 @@ const SuperAdminRoute = ({ children }: SuperAdminRouteProps) => {
           return;
         }
 
-        const tokenData = JSON.parse(atob(token));
-        const isSuperAdmin = adminService.isSuperAdmin(tokenData.email);
+        const isSuperAdmin = await adminService.isSuperAdmin(storedEmail);
 
         if (!isSuperAdmin) {
           toast({

@@ -18,7 +18,29 @@ const InstallPWA = ({ onClose }: InstallPWAProps) => {
 
     if (isInstalled) {
       setShowInstallButton(false);
+      // Marcar como instalado no localStorage
+      localStorage.setItem('pwaInstalled', 'true');
       return;
+    }
+
+    // Verificar se o usuário já fechou o banner recentemente
+    const lastDismissed = localStorage.getItem('pwaBannerDismissed');
+    const pwaInstalled = localStorage.getItem('pwaInstalled');
+    
+    // Se já foi instalado ou usuário dispensou recentemente, não mostrar
+    if (pwaInstalled === 'true') {
+      setShowInstallButton(false);
+      return;
+    }
+
+    if (lastDismissed) {
+      const timeSinceDismissed = Date.now() - parseInt(lastDismissed);
+      const oneDay = 24 * 60 * 60 * 1000; // 24 horas em millisegundos
+      
+      if (timeSinceDismissed < oneDay) {
+        setShowInstallButton(false);
+        return;
+      }
     }
 
     // Escutar evento de instalação
@@ -32,6 +54,7 @@ const InstallPWA = ({ onClose }: InstallPWAProps) => {
     const handleAppInstalled = () => {
       setShowInstallButton(false);
       setDeferredPrompt(null);
+      localStorage.setItem('pwaInstalled', 'true');
       console.log('✅ PWA instalado com sucesso!');
     };
 
@@ -86,8 +109,22 @@ const InstallPWA = ({ onClose }: InstallPWAProps) => {
 
   const handleDismiss = () => {
     setShowInstallButton(false);
+    // Salvar timestamp de quando o usuário fechou o banner
+    localStorage.setItem('pwaBannerDismissed', Date.now().toString());
     if (onClose) onClose();
   };
+
+  // Função para limpar cache de instalação (útil para testes)
+  const clearInstallCache = () => {
+    localStorage.removeItem('pwaInstalled');
+    localStorage.removeItem('pwaBannerDismissed');
+    setShowInstallButton(true);
+  };
+
+  // Expor função para debug (remover em produção)
+  if (typeof window !== 'undefined') {
+    (window as any).clearPWAInstallCache = clearInstallCache;
+  }
 
   if (!showInstallButton) {
     return null;

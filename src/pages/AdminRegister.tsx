@@ -24,32 +24,35 @@ const AdminRegister = () => {
   const token = searchParams.get('token');
 
   useEffect(() => {
-    if (!token) {
-      toast({
-        title: "Link inválido",
-        description: "Este link de convite não é válido.",
-        variant: "destructive",
-      });
-      navigate("/login");
-      return;
-    }
+    const validateInvite = async () => {
+      if (!token) {
+        toast({
+          title: "Link inválido",
+          description: "Este link de convite não é válido.",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
 
-    // Verificar se o convite é válido
-    const invites = adminService.getInvites();
-    const validInvite = invites.find(inv => inv.token === token && !inv.isUsed && new Date(inv.expiresAt) > new Date());
-    
-    if (!validInvite) {
-      toast({
-        title: "Convite expirado ou inválido",
-        description: "Este convite já foi usado ou expirou.",
-        variant: "destructive",
-      });
-      navigate("/login");
-      return;
-    }
+      // Verificar se o convite é válido
+      const validInvite = await adminService.validateInvite(token);
+      
+      if (!validInvite) {
+        toast({
+          title: "Convite expirado ou inválido",
+          description: "Este convite já foi usado ou expirou.",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
 
-    setInvite(validInvite);
-    setIsValidInvite(true);
+      setInvite(validInvite);
+      setIsValidInvite(true);
+    };
+
+    validateInvite();
   }, [token, navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,11 +84,12 @@ const AdminRegister = () => {
 
     try {
       // Criar usuário com a senha
-      adminService.createUserFromInvite(invite.token, password);
+      await adminService.useInvite(invite.token, password);
       
       toast({
         title: "Conta criada com sucesso!",
         description: "Você pode fazer login com seu email e senha.",
+        duration: 2000, // 2 segundos
       });
 
       navigate("/login");

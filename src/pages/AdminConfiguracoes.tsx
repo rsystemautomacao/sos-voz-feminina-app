@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { adminService, AdminUser, AdminLog } from "@/services/adminService";
 import AdminNavigation from "@/components/AdminNavigation";
+import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 
 const AdminConfiguracoes = () => {
   const [activeTab, setActiveTab] = useState("usuarios");
@@ -39,15 +40,21 @@ const AdminConfiguracoes = () => {
   const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
   const [userToResetPassword, setUserToResetPassword] = useState<AdminUser | null>(null);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [inviteToDelete, setInviteToDelete] = useState<any>(null);
+  const [isDeletingInvite, setIsDeletingInvite] = useState(false);
   
   const { toast } = useToast();
 
   useEffect(() => {
     loadData();
-    const adminToken = localStorage.getItem("adminToken");
-    if (adminToken) {
-      const adminData = JSON.parse(atob(adminToken));
-      setCurrentAdminEmail(adminData.email);
+    // Usar o email armazenado no localStorage durante o login
+    const storedEmail = localStorage.getItem("adminEmail");
+    if (storedEmail && storedEmail.includes('@')) {
+      setCurrentAdminEmail(storedEmail);
+    } else {
+      console.error('Email inválido armazenado:', storedEmail);
+      // Redirecionar para login se não tiver email válido
+      window.location.href = '/login';
     }
   }, []);
 
@@ -61,6 +68,15 @@ const AdminConfiguracoes = () => {
       setLogs(logsData);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
+    }
+  };
+
+  const loadInvites = async () => {
+    try {
+      const invitesData = await adminService.getInvites();
+      setInvites(invitesData);
+    } catch (error) {
+      console.error('Erro ao carregar convites:', error);
     }
   };
 
@@ -98,10 +114,11 @@ const AdminConfiguracoes = () => {
       toast({
         title: "Convite criado!",
         description: "Link copiado para a área de transferência. Envie para o usuário.",
+        duration: 2000,
       });
       
       setInviteEmail("");
-      loadData();
+      loadInvites();
       
     } catch (error) {
       toast({
@@ -160,36 +177,52 @@ const AdminConfiguracoes = () => {
     toast({
       title: "Link copiado!",
       description: "Link do convite copiado para a área de transferência.",
+      duration: 2000,
     });
   };
 
-  const handleDeleteInvite = async (invite: any) => {
+  const handleDeleteInvite = (invite: any) => {
+    setInviteToDelete(invite);
+  };
+
+  const confirmDeleteInvite = async () => {
+    if (!inviteToDelete) return;
+
     const canInvite = await adminService.canInviteUsers(currentAdminEmail);
     if (!canInvite) {
       toast({
         title: "Permissão negada",
         description: "Apenas super administradores podem excluir convites.",
         variant: "destructive",
+        duration: 2000,
       });
+      setInviteToDelete(null);
       return;
     }
 
-         try {
-       await adminService.deleteInvite(invite.id, currentAdminEmail);
+    setIsDeletingInvite(true);
+    
+    try {
+      await adminService.deleteInvite(inviteToDelete._id || inviteToDelete.id, currentAdminEmail);
       
       toast({
         title: "Convite excluído",
-        description: `Convite para ${invite.email} foi removido.`,
+        description: `Convite para ${inviteToDelete.email} foi removido.`,
+        duration: 2000,
       });
       
-      loadData();
+      loadInvites();
+      setInviteToDelete(null);
       
     } catch (error) {
       toast({
         title: "Erro ao excluir convite",
         description: error instanceof Error ? error.message : "Erro desconhecido",
         variant: "destructive",
+        duration: 2000,
       });
+    } finally {
+      setIsDeletingInvite(false);
     }
   };
 
@@ -340,7 +373,7 @@ const AdminConfiguracoes = () => {
             <TabsContent value="usuarios" className="space-y-8">
               {/* Criar Convite */}
               {isSuperAdmin && (
-                <Card className="shadow-soft">
+                <Card key="create-invite-card" className="shadow-soft">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <UserPlus className="text-primary" size={24} />
@@ -406,25 +439,27 @@ const AdminConfiguracoes = () => {
                           </div>
                           <div>
                             <div className="flex items-center space-x-2">
-                              <span className="font-semibold">{user.email}</span>
-                              <Badge className={user.role === 'super_admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}>
+                              <span key={`email-${user.id}`} className="font-semibold">{user.email}</span>
+                              <Badge key={`role-${user.id}`} className={user.role === 'super_admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}>
                                 {user.role === 'super_admin' ? 'Super Admin' : 'Admin'}
                               </Badge>
-                              <Badge className={user.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                              <Badge key={`status-${user.id}`} className={user.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
                                 {user.isActive ? 'Ativo' : 'Inativo'}
                               </Badge>
                             </div>
-                            <div className="text-sm text-muted-foreground space-x-4">
-                              <span>Criado em: {formatDate(user.createdAt)}</span>
-                              {user.lastLogin && (
-                                <span>Último login: {formatDate(user.lastLogin)}</span>
-                              )}
+                            <div className="text-sm text-muted-foreground">
+                              <div className="flex items-center space-x-4">
+                                <span key={`created-${user.id}`}>Criado em: {formatDate(user.createdAt)}</span>
+                                {user.lastLogin && (
+                                  <span key={`last-login-${user.id}`}>Último login: {formatDate(user.lastLogin)}</span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
                           {isSuperAdmin && user.email !== currentAdminEmail && (
-                            <>
+                            <div key={`actions-${user.id}`} className="flex items-center space-x-2">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -443,7 +478,7 @@ const AdminConfiguracoes = () => {
                                 <Trash2 size={16} />
                                 <span className="hidden sm:inline">Excluir</span>
                               </Button>
-                            </>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -454,7 +489,7 @@ const AdminConfiguracoes = () => {
 
                              {/* Convites Ativos - Apenas Super Admin */}
                {isSuperAdmin && (
-                 <Card className="shadow-soft">
+                 <Card key="active-invites-card" className="shadow-soft">
                    <CardHeader>
                      <CardTitle className="flex items-center space-x-2">
                        <Mail className="text-primary" size={24} />
@@ -470,7 +505,7 @@ const AdminConfiguracoes = () => {
                           .filter(invite => !invite.isUsed && new Date(invite.expiresAt) > new Date())
                           .map((invite) => (
                            <div
-                             key={invite.id}
+                             key={invite._id || invite.id}
                              className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
                            >
                              <div>
@@ -518,7 +553,7 @@ const AdminConfiguracoes = () => {
 
                {/* Convites Expirados - Apenas Super Admin */}
                {isSuperAdmin && (
-                 <Card className="shadow-soft">
+                 <Card key="expired-invites-card" className="shadow-soft">
                    <CardHeader>
                      <CardTitle className="flex items-center space-x-2">
                        <Clock className="text-primary" size={24} />
@@ -534,7 +569,7 @@ const AdminConfiguracoes = () => {
                           .filter(invite => !invite.isUsed && new Date(invite.expiresAt) <= new Date())
                           .map((invite) => (
                            <div
-                             key={invite.id}
+                             key={invite._id || invite.id}
                              className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg"
                            >
                              <div>
@@ -561,7 +596,7 @@ const AdminConfiguracoes = () => {
                              </div>
                            </div>
                          ))}
-                       {adminService.getInvites().filter(invite => !invite.isUsed && new Date(invite.expiresAt) <= new Date()).length === 0 && (
+                       {users.length === 0 && (
                          <p className="text-center text-muted-foreground py-8">
                            Nenhum convite expirado
                          </p>
@@ -669,14 +704,16 @@ const AdminConfiguracoes = () => {
                               <p className="text-sm text-muted-foreground mb-2">
                                 {log.details}
                               </p>
-                              <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                                <span className="flex items-center space-x-1">
-                                  <Clock size={12} />
-                                  <span>{formatDate(log.timestamp)}</span>
-                                </span>
-                                {log.ipAddress && (
-                                  <span>IP: {log.ipAddress}</span>
-                                )}
+                              <div className="text-xs text-muted-foreground">
+                                <div className="flex items-center space-x-4">
+                                  <span className="flex items-center space-x-1">
+                                    <Clock size={12} />
+                                    <span>Às {formatDate(log.timestamp)}</span>
+                                  </span>
+                                  {log.ipAddress && (
+                                    <span>IP: {log.ipAddress}</span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -794,6 +831,17 @@ const AdminConfiguracoes = () => {
            </Card>
          </div>
        )}
+
+      {/* Modal de confirmação para exclusão de convite */}
+      <DeleteConfirmModal
+        isOpen={!!inviteToDelete}
+        onClose={() => setInviteToDelete(null)}
+        onConfirm={confirmDeleteInvite}
+        title="Excluir Convite"
+        description="Tem certeza que deseja excluir este convite?"
+        itemName={inviteToDelete?.email || ''}
+        isLoading={isDeletingInvite}
+      />
     </div>
   );
 };

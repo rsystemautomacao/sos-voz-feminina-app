@@ -24,7 +24,8 @@ const adminLogSchema = new mongoose.Schema({
       'PASSWORD_CHANGED',
       'SYSTEM_INIT',
       'USER_CREATED',
-      'DELETE_INVITE'
+      'DELETE_INVITE',
+      'DELETE_DENUNCIA'
     ]
   },
   details: {

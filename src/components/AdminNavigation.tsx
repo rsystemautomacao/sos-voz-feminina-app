@@ -15,12 +15,35 @@ const AdminNavigation = () => {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
-    const checkAdminRole = () => {
+    const checkAdminRole = async () => {
       try {
-        const token = localStorage.getItem("adminToken");
-        if (token) {
-          const tokenData = JSON.parse(atob(token));
-          setIsSuperAdmin(adminService.isSuperAdmin(tokenData.email));
+        // Usar o email armazenado no localStorage durante o login
+        const storedEmail = localStorage.getItem("adminEmail");
+        if (storedEmail) {
+          const isSuper = await adminService.isSuperAdmin(storedEmail);
+          setIsSuperAdmin(isSuper);
+        } else {
+          // Fallback: tentar extrair do JWT se disponível
+          const token = localStorage.getItem("adminToken");
+          if (token) {
+            try {
+              const tokenParts = token.split('.');
+              if (tokenParts.length === 3) {
+                const payload = JSON.parse(atob(tokenParts[1]));
+                // Se não tiver email no JWT, usar o userId para buscar o usuário
+                if (payload.userId) {
+                  // Buscar usuário por ID para obter o email
+                  const user = await adminService.getUserById(payload.userId);
+                  if (user && user.email) {
+                    const isSuper = await adminService.isSuperAdmin(user.email);
+                    setIsSuperAdmin(isSuper);
+                  }
+                }
+              }
+            } catch (decodeError) {
+              console.error('Erro ao decodificar JWT:', decodeError);
+            }
+          }
         }
       } catch (error) {
         console.error('Erro ao verificar role do admin:', error);
@@ -33,6 +56,8 @@ const AdminNavigation = () => {
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminLoginTime");
+    localStorage.removeItem("adminEmail");
+    localStorage.removeItem("hasShownWelcome"); // Limpar flag de boas-vindas
     navigate("/login");
     toast({
       title: "Logout realizado",

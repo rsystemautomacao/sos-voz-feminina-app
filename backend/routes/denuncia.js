@@ -1,46 +1,489 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
+import AdminLog from '../models/AdminLog.js';
+import { authenticateToken } from '../middleware/auth.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-// Rota para receber denúncias
-router.post('/', [
-  body('nome').notEmpty().withMessage('Nome é obrigatório'),
-  body('email').isEmail().withMessage('Email inválido'),
-  body('telefone').notEmpty().withMessage('Telefone é obrigatório'),
-  body('endereco').notEmpty().withMessage('Endereço é obrigatório'),
-  body('descricao').notEmpty().withMessage('Descrição é obrigatória'),
-  body('tipoViolencia').notEmpty().withMessage('Tipo de violência é obrigatório'),
-  body('urgencia').isIn(['baixa', 'media', 'alta']).withMessage('Urgência inválida')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        error: 'Dados inválidos',
-        details: errors.array()
-      });
-    }
+// Configuração do multer para upload de arquivos
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '../uploads'));
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
 
-    // Aqui você implementaria a lógica para salvar a denúncia no banco
-    // Por enquanto, vamos apenas retornar sucesso
-    const denuncia = {
-      id: Date.now().toString(),
-      ...req.body,
-      status: 'pendente',
-      createdAt: new Date().toISOString()
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|mp3|wav|m4a/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Tipo de arquivo não permitido'));
+    }
+  }
+});
+
+// Função para criar logs de auditoria
+const createLog = async (adminEmail, action, details, req, denunciaId = null) => {
+  try {
+    await AdminLog.create({
+      adminEmail,
+      action,
+      details,
+      denunciaId,
+      ipAddress: req.ip || req.connection.remoteAddress,
+      userAgent: req.get('User-Agent')
+    });
+  } catch (error) {
+    console.error('Erro ao criar log:', error);
+  }
+};
+
+// Schema para Denúncia
+const DenunciaSchema = new mongoose.Schema({
+  idPublico: { type: String, required: true, unique: true },
+  tipoViolencia: { type: String, required: true },
+  dataOcorrido: { type: String, required: true },
+  localizacao: {
+    cidade: String,
+    estado: String,
+    bairro: String
+  },
+  relato: { type: String, required: true },
+  status: { 
+    type: String, 
+    enum: ['pendente', 'analisando', 'resolvido', 'arquivado'],
+    default: 'pendente'
+  },
+  prioridade: {
+    type: String,
+    enum: ['baixa', 'media', 'alta', 'urgente'],
+    default: 'media'
+  },
+  evidencias: [{
+    id: String,
+    nome: String,
+    tipo: { type: String, enum: ['image', 'audio'] },
+    dados: String, // base64 ou URL
+    tamanho: Number
+  }],
+  observacoes: String,
+  dataCriacao: { type: Date, default: Date.now },
+  dataAtualizacao: { type: Date, default: Date.now }
+});
+
+const Denuncia = mongoose.model('Denuncia', DenunciaSchema);
+
+// Função para gerar ID público
+const generatePublicId = () => {
+  const hoje = new Date();
+  const dia = hoje.getDate().toString().padStart(2, '0');
+  const mes = (hoje.getMonth() + 1).toString().padStart(2, '0');
+  const ano = hoje.getFullYear().toString().slice(-2);
+  
+  // Buscar último número sequencial
+  return Denuncia.countDocuments().then(count => {
+    const nextNumber = (count + 1000).toString();
+    return `${dia}${mes}${ano}${nextNumber}`;
+  });
+};
+
+// Função para calcular prioridade
+const calcularPrioridade = (tipoViolencia) => {
+  const prioridades = {
+    'fisica': 'urgente',
+    'sexual': 'urgente',
+    'psicologica': 'alta',
+    'economica': 'media',
+    'moral': 'media',
+    'patrimonial': 'baixa',
+    'outros': 'baixa'
+  };
+  return prioridades[tipoViolencia] || 'media';
+};
+
+// GET /api/denuncias - Listar todas as denúncias
+router.get('/', async (req, res) => {
+  try {
+    const denuncias = await Denuncia.find().sort({ dataCriacao: -1 });
+    res.json({ denuncias });
+  } catch (error) {
+    console.error('Erro ao buscar denúncias:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// GET /api/denuncias/stats/estatisticas - Estatísticas
+router.get('/stats/estatisticas', async (req, res) => {
+  try {
+    const agora = new Date();
+    const vinteQuatroHorasAtras = new Date(agora.getTime() - 24 * 60 * 60 * 1000);
+
+    const [total, porStatus, porTipo, porPrioridade, recentes] = await Promise.all([
+      Denuncia.countDocuments(),
+      Denuncia.aggregate([
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ]),
+      Denuncia.aggregate([
+        { $group: { _id: '$tipoViolencia', count: { $sum: 1 } } }
+      ]),
+      Denuncia.aggregate([
+        { $group: { _id: '$prioridade', count: { $sum: 1 } } }
+      ]),
+      Denuncia.countDocuments({ dataCriacao: { $gte: vinteQuatroHorasAtras } })
+    ]);
+
+    const estatisticas = {
+      total,
+      porStatus: {
+        pendente: 0,
+        analisando: 0,
+        resolvido: 0,
+        arquivado: 0
+      },
+      porTipo: {},
+      porPrioridade: {
+        baixa: 0,
+        media: 0,
+        alta: 0,
+        urgente: 0
+      },
+      recentes
     };
 
-    res.status(201).json({
-      message: 'Denúncia registrada com sucesso',
-      denuncia
+    // Processar resultados
+    porStatus.forEach(item => {
+      estatisticas.porStatus[item._id] = item.count;
     });
 
-  } catch (error) {
-    console.error('Erro ao registrar denúncia:', error);
-    res.status(500).json({
-      error: 'Erro interno do servidor'
+    porTipo.forEach(item => {
+      estatisticas.porTipo[item._id] = item.count;
     });
+
+    porPrioridade.forEach(item => {
+      estatisticas.porPrioridade[item._id] = item.count;
+    });
+
+    res.json({ estatisticas });
+  } catch (error) {
+    console.error('Erro ao buscar estatísticas:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// GET /api/denuncias/:id - Buscar denúncia por ID
+router.get('/:id', async (req, res) => {
+  try {
+    const denuncia = await Denuncia.findById(req.params.id);
+    if (!denuncia) {
+      return res.status(404).json({ error: 'Denúncia não encontrada' });
+    }
+    res.json({ denuncia });
+  } catch (error) {
+    console.error('Erro ao buscar denúncia:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// GET /api/denuncias/id/:id - Buscar denúncia por ID (alternativa)
+router.get('/id/:id', async (req, res) => {
+  try {
+    const denuncia = await Denuncia.findById(req.params.id);
+    if (!denuncia) {
+      return res.status(404).json({ error: 'Denúncia não encontrada' });
+    }
+    res.json({ denuncia });
+  } catch (error) {
+    console.error('Erro ao buscar denúncia:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// PUT /api/denuncias/:id/status - Atualizar status
+router.put('/:id/status', authenticateToken, async (req, res) => {
+  try {
+    const { status, observacoes } = req.body;
+    const adminEmail = req.user.email;
+    
+    // Buscar denúncia atual para comparar status
+    const denunciaAtual = await Denuncia.findById(req.params.id);
+    if (!denunciaAtual) {
+      return res.status(404).json({ error: 'Denúncia não encontrada' });
+    }
+    
+    const statusAnterior = denunciaAtual.status;
+    
+    const denuncia = await Denuncia.findByIdAndUpdate(
+      req.params.id,
+      { 
+        status, 
+        observacoes: observacoes || undefined,
+        dataAtualizacao: new Date()
+      },
+      { new: true }
+    );
+
+    // Criar log de auditoria
+    await createLog(
+      adminEmail, 
+      'UPDATE_STATUS', 
+      `Status alterado de "${statusAnterior}" para "${status}"${observacoes ? ` - Observações: ${observacoes}` : ''}`, 
+      req, 
+      denuncia.idPublico
+    );
+
+    res.json({ denuncia });
+  } catch (error) {
+    console.error('Erro ao atualizar status:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// PUT /api/denuncias/:id/prioridade - Atualizar prioridade
+router.put('/:id/prioridade', authenticateToken, async (req, res) => {
+  try {
+    const { prioridade } = req.body;
+    const adminEmail = req.user.email;
+    
+    // Buscar denúncia atual para comparar prioridade
+    const denunciaAtual = await Denuncia.findById(req.params.id);
+    if (!denunciaAtual) {
+      return res.status(404).json({ error: 'Denúncia não encontrada' });
+    }
+    
+    const prioridadeAnterior = denunciaAtual.prioridade;
+    
+    const denuncia = await Denuncia.findByIdAndUpdate(
+      req.params.id,
+      { 
+        prioridade,
+        dataAtualizacao: new Date()
+      },
+      { new: true }
+    );
+
+    // Criar log de auditoria
+    await createLog(
+      adminEmail, 
+      'UPDATE_PRIORITY', 
+      `Prioridade alterada de "${prioridadeAnterior}" para "${prioridade}"`, 
+      req, 
+      denuncia.idPublico
+    );
+
+    res.json({ denuncia });
+  } catch (error) {
+    console.error('Erro ao atualizar prioridade:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// POST /api/denuncias - Criar nova denúncia
+router.post('/', upload.array('evidencias', 5), async (req, res) => {
+  try {
+    console.log('=== INÍCIO DA CRIAÇÃO DE DENÚNCIA ===');
+    console.log('Body recebido:', req.body);
+    console.log('Files recebidos:', req.files);
+    
+    const { relato, tipoViolencia, dataOcorrido } = req.body;
+    
+    console.log('Dados extraídos:', { relato, tipoViolencia, dataOcorrido });
+    
+    // Processar localização - pode vir como JSON string, objeto ou campos separados
+    let localizacao = {};
+    if (req.body.localizacao) {
+      if (typeof req.body.localizacao === 'string') {
+        // Se veio como JSON string
+        try {
+          localizacao = JSON.parse(req.body.localizacao);
+          console.log('Localização (JSON string):', localizacao);
+        } catch (e) {
+          // Se não é JSON válido, usar objeto vazio
+          localizacao = {};
+          console.log('Erro ao parsear JSON da localização:', e.message);
+        }
+      } else if (typeof req.body.localizacao === 'object') {
+        // Se já é um objeto
+        localizacao = req.body.localizacao;
+        console.log('Localização (objeto):', localizacao);
+      }
+    } else {
+      // Se veio como campos separados (localizacao[cidade], etc.)
+      localizacao = {
+        cidade: req.body['localizacao[cidade]'] || '',
+        estado: req.body['localizacao[estado]'] || '',
+        bairro: req.body['localizacao[bairro]'] || ''
+      };
+      console.log('Localização (campos separados):', localizacao);
+    }
+    
+    // Gerar ID público
+    console.log('Gerando ID público...');
+    const idPublico = await generatePublicId();
+    console.log('ID público gerado:', idPublico);
+    
+    // Processar evidências
+    const evidencias = [];
+    if (req.files && req.files.length > 0) {
+      console.log('Processando evidências...');
+      for (const file of req.files) {
+        const evidencia = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2),
+          nome: file.originalname,
+          tipo: file.mimetype.startsWith('image/') ? 'image' : 'audio',
+          dados: `/uploads/${file.filename}`, // URL do arquivo
+          tamanho: file.size
+        };
+        evidencias.push(evidencia);
+        console.log('Evidência processada:', evidencia);
+      }
+    }
+
+    console.log('Criando objeto Denuncia...');
+    const denuncia = new Denuncia({
+      idPublico,
+      tipoViolencia,
+      dataOcorrido,
+      localizacao,
+      relato,
+      prioridade: calcularPrioridade(tipoViolencia),
+      evidencias
+    });
+
+    console.log('Salvando denúncia no banco...');
+    await denuncia.save();
+    console.log('Denúncia salva com sucesso!');
+
+    res.status(201).json({ denuncia });
+  } catch (error) {
+    console.error('=== ERRO AO CRIAR DENÚNCIA ===');
+    console.error('Erro completo:', error);
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// GET /api/denuncias/filter - Filtrar denúncias
+router.get('/filter', async (req, res) => {
+  try {
+    const { status, tipoViolencia, prioridade, dataInicio, dataFim, busca } = req.query;
+    
+    let filter = {};
+    
+    if (status) filter.status = status;
+    if (tipoViolencia) filter.tipoViolencia = tipoViolencia;
+    if (prioridade) filter.prioridade = prioridade;
+    
+    if (dataInicio || dataFim) {
+      filter.dataCriacao = {};
+      if (dataInicio) filter.dataCriacao.$gte = new Date(dataInicio);
+      if (dataFim) filter.dataCriacao.$lte = new Date(dataFim);
+    }
+    
+    if (busca) {
+      filter.$or = [
+        { relato: { $regex: busca, $options: 'i' } },
+        { tipoViolencia: { $regex: busca, $options: 'i' } },
+        { 'localizacao.cidade': { $regex: busca, $options: 'i' } },
+        { 'localizacao.estado': { $regex: busca, $options: 'i' } },
+        { idPublico: { $regex: busca, $options: 'i' } }
+      ];
+    }
+
+    const denuncias = await Denuncia.find(filter).sort({ dataCriacao: -1 });
+    res.json({ denuncias });
+  } catch (error) {
+    console.error('Erro ao filtrar denúncias:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// DELETE /api/denuncias/:id - Excluir denúncia
+router.delete('/:id', authenticateToken, async (req, res) => {
+  try {
+    const adminEmail = req.user.email;
+    
+    // Buscar denúncia antes de excluir para log
+    const denuncia = await Denuncia.findById(req.params.id);
+    if (!denuncia) {
+      return res.status(404).json({ error: 'Denúncia não encontrada' });
+    }
+    
+    // Excluir denúncia
+    await Denuncia.findByIdAndDelete(req.params.id);
+    
+    // Criar log de auditoria
+    await createLog(
+      adminEmail, 
+      'DELETE_DENUNCIA', 
+      `Denúncia ${denuncia.idPublico} excluída - Tipo: ${denuncia.tipoViolencia}, Status: ${denuncia.status}`, 
+      req, 
+      denuncia.idPublico
+    );
+
+    res.json({ message: 'Denúncia excluída com sucesso' });
+  } catch (error) {
+    console.error('Erro ao excluir denúncia:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// GET /api/denuncias/export - Exportar denúncias
+router.get('/export', authenticateToken, async (req, res) => {
+  try {
+    const adminEmail = req.user.email;
+    const { formato = 'json' } = req.query;
+    const denuncias = await Denuncia.find().sort({ dataCriacao: -1 });
+    
+    // Criar log de auditoria
+    await createLog(
+      adminEmail, 
+      'EXPORT_DATA', 
+      `Exportação de ${denuncias.length} denúncias em formato ${formato.toUpperCase()}`, 
+      req
+    );
+
+    if (formato === 'json') {
+      res.json({ data: JSON.stringify(denuncias, null, 2) });
+    } else if (formato === 'csv') {
+      const headers = ['ID Público', 'Tipo', 'Data Ocorrido', 'Cidade', 'Estado', 'Status', 'Prioridade', 'Data Criação'];
+      const rows = denuncias.map(d => [
+        d.idPublico,
+        d.tipoViolencia,
+        d.dataOcorrido,
+        d.localizacao.cidade || '',
+        d.localizacao.estado || '',
+        d.status,
+        d.prioridade || '',
+        d.dataCriacao
+      ]);
+      
+      const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      res.json({ data: csv });
+    } else {
+      res.status(400).json({ error: 'Formato não suportado' });
+    }
+  } catch (error) {
+    console.error('Erro ao exportar denúncias:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 

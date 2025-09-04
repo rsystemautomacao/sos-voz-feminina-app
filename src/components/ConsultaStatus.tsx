@@ -222,7 +222,7 @@ const ConsultaStatus = () => {
                 <p className="text-sm">{formatDate(denuncia.dataCriacao)}</p>
               </div>
 
-              {denuncia.localizacao.cidade && (
+              {denuncia.localizacao?.cidade && (
                 <div className="space-y-2">
                   <h4 className="font-semibold text-green-800">Localização</h4>
                   <p className="text-sm">

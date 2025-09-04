@@ -31,12 +31,16 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
+// Rate limiting - mais permissivo para desenvolvimento
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutos
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limite de 100 requests por windowMs
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000, // limite de 1000 requests por windowMs (desenvolvimento)
   message: {
     error: 'Muitas requisições deste IP, tente novamente mais tarde.'
+  },
+  // Pular rate limiting em desenvolvimento
+  skip: (req) => {
+    return process.env.NODE_ENV === 'development' && req.ip === '127.0.0.1';
   }
 });
 app.use('/api/', limiter);

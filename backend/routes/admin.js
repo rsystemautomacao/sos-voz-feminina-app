@@ -24,7 +24,81 @@ const createLog = async (adminEmail, action, details, req) => {
   }
 };
 
-// Aplicar autenticação em todas as rotas
+// ===== ROTAS PÚBLICAS (sem autenticação) =====
+
+// Validar convite (rota pública)
+router.get('/invites/validate/:token', async (req, res) => {
+  try {
+    const invite = await AdminInvite.findOne({
+      token: req.params.token,
+      isUsed: false,
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!invite) {
+      return res.status(404).json({ error: 'Convite inválido ou expirado' });
+    }
+
+    res.json({ invite });
+  } catch (error) {
+    console.error('Erro ao validar convite:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Usar convite (rota pública)
+router.post('/invites/:token/use', [
+  body('password').isLength({ min: 6 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        error: 'Dados inválidos',
+        details: errors.array()
+      });
+    }
+
+    const { password } = req.body;
+
+    const invite = await AdminInvite.findOne({
+      token: req.params.token,
+      isUsed: false,
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!invite) {
+      return res.status(404).json({ error: 'Convite inválido ou expirado' });
+    }
+
+    // Criar usuário
+    const user = new AdminUser({
+      email: invite.email,
+      password,
+      role: 'admin'
+    });
+
+    await user.save();
+
+    // Marcar convite como usado
+    await invite.markAsUsed();
+
+    await createLog(invite.email, 'USER_CREATED', 'Usuário criado via convite', req);
+
+    res.json({
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao usar convite:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Aplicar autenticação em todas as rotas a partir daqui
 router.use(authenticateToken);
 
 // ===== ROTAS DE USUÁRIOS =====
@@ -43,18 +117,48 @@ router.get('/users', requireAdmin, async (req, res) => {
 // Buscar usuário por email
 router.get('/users/:email', requireAdmin, async (req, res) => {
   try {
+    console.log('🔍 Buscando usuário por email:', req.params.email);
+    console.log('👤 Usuário autenticado:', req.user);
+    
     const user = await AdminUser.findOne(
       { email: req.params.email.toLowerCase() },
       '-password'
     );
     
+    console.log('👤 Usuário encontrado:', user ? 'Sim' : 'Não');
+    
     if (!user) {
+      console.log('❌ Usuário não encontrado para:', req.params.email);
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
     
+    console.log('✅ Usuário retornado com sucesso');
     res.json({ user });
   } catch (error) {
-    console.error('Erro ao buscar usuário:', error);
+    console.error('💥 Erro ao buscar usuário:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Buscar usuário por ID
+router.get('/users/id/:userId', requireAdmin, async (req, res) => {
+  try {
+    console.log('🔍 Buscando usuário por ID:', req.params.userId);
+    console.log('👤 Usuário autenticado:', req.user);
+    
+    const user = await AdminUser.findById(req.params.userId, '-password');
+    
+    console.log('👤 Usuário encontrado:', user ? 'Sim' : 'Não');
+    
+    if (!user) {
+      console.log('❌ Usuário não encontrado para ID:', req.params.userId);
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+    
+    console.log('✅ Usuário retornado com sucesso');
+    res.json({ user });
+  } catch (error) {
+    console.error('💥 Erro ao buscar usuário por ID:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -141,7 +245,7 @@ router.post('/invites', requireSuperAdmin, [
     const invite = new AdminInvite({
       email: email.toLowerCase(),
       token: AdminInvite.generateToken(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 horas
+      expiresAt: new Date(Date.now() + 120 * 60 * 1000), // 120 minutos (2 horas)
       createdBy
     });
 
@@ -167,77 +271,7 @@ router.get('/invites', requireSuperAdmin, async (req, res) => {
   }
 });
 
-// Validar convite
-router.get('/invites/validate/:token', async (req, res) => {
-  try {
-    const invite = await AdminInvite.findOne({
-      token: req.params.token,
-      isUsed: false,
-      expiresAt: { $gt: new Date() }
-    });
 
-    if (!invite) {
-      return res.status(404).json({ error: 'Convite inválido ou expirado' });
-    }
-
-    res.json({ invite });
-  } catch (error) {
-    console.error('Erro ao validar convite:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Usar convite
-router.post('/invites/:token/use', [
-  body('password').isLength({ min: 6 })
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        error: 'Dados inválidos',
-        details: errors.array()
-      });
-    }
-
-    const { password } = req.body;
-
-    const invite = await AdminInvite.findOne({
-      token: req.params.token,
-      isUsed: false,
-      expiresAt: { $gt: new Date() }
-    });
-
-    if (!invite) {
-      return res.status(404).json({ error: 'Convite inválido ou expirado' });
-    }
-
-    // Criar usuário
-    const user = new AdminUser({
-      email: invite.email,
-      password,
-      role: 'admin'
-    });
-
-    await user.save();
-
-    // Marcar convite como usado
-    await invite.markAsUsed();
-
-    await createLog(invite.email, 'USER_CREATED', 'Usuário criado via convite', req);
-
-    res.json({
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    console.error('Erro ao usar convite:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
 
 // Excluir convite
 router.delete('/invites/:id', requireSuperAdmin, async (req, res) => {
@@ -446,7 +480,7 @@ router.get('/logs/range', requireSuperAdmin, async (req, res) => {
 // ===== ROTAS DE ESTATÍSTICAS =====
 
 // Estatísticas gerais
-router.get('/stats', requireSuperAdmin, async (req, res) => {
+router.get('/stats', requireAdmin, async (req, res) => {
   try {
     const totalAdmins = await AdminUser.countDocuments();
     const activeAdmins = await AdminUser.countDocuments({ isActive: true });

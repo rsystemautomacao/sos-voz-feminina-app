@@ -27,9 +27,12 @@ router.post('/login', [
   body('password').isLength({ min: 6 })
 ], async (req, res) => {
   try {
+    console.log('🔐 Tentativa de login:', { email: req.body.email, passwordLength: req.body.password?.length });
+    
     // Verificar erros de validação
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Erros de validação:', errors.array());
       return res.status(400).json({
         error: 'Dados inválidos',
         details: errors.array()
@@ -37,30 +40,39 @@ router.post('/login', [
     }
 
     const { email, password } = req.body;
+    console.log('📧 Email recebido:', email);
 
     // Buscar usuário
     const user = await AdminUser.findOne({ email: email.toLowerCase() });
+    console.log('👤 Usuário encontrado:', user ? 'Sim' : 'Não');
     
     if (!user) {
+      console.log('❌ Usuário não encontrado para:', email);
       return res.status(401).json({
         error: 'Email ou senha inválidos'
       });
     }
 
     if (!user.isActive) {
+      console.log('❌ Usuário inativo:', email);
       return res.status(401).json({
         error: 'Conta desativada'
       });
     }
 
+    console.log('🔑 Verificando senha...');
     // Verificar senha
     const isPasswordValid = await user.comparePassword(password);
+    console.log('🔑 Senha válida:', isPasswordValid);
+    
     if (!isPasswordValid) {
+      console.log('❌ Senha inválida para:', email);
       return res.status(401).json({
         error: 'Email ou senha inválidos'
       });
     }
 
+    console.log('✅ Login bem-sucedido para:', email);
     // Atualizar último login
     await user.updateLastLogin();
 
@@ -81,7 +93,7 @@ router.post('/login', [
     });
 
   } catch (error) {
-    console.error('Erro no login:', error);
+    console.error('💥 Erro no login:', error);
     res.status(500).json({
       error: 'Erro interno do servidor'
     });

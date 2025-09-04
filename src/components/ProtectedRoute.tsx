@@ -12,7 +12,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
         const token = localStorage.getItem("adminToken");
         const loginTime = localStorage.getItem("adminLoginTime");
@@ -27,8 +27,40 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           return;
         }
 
-        // Verificar se o token é válido
-        const tokenData = JSON.parse(atob(token));
+        // Usar o email armazenado no localStorage durante o login
+        let userEmail = localStorage.getItem("adminEmail");
+        
+        // Se não tiver email armazenado, tentar extrair do JWT como fallback
+        if (!userEmail) {
+          try {
+            const tokenParts = token.split('.');
+            if (tokenParts.length === 3) {
+              const payload = JSON.parse(atob(tokenParts[1]));
+              // Se não tiver email no JWT, usar o userId para buscar o usuário
+              if (payload.userId) {
+                const user = await adminService.getUserById(payload.userId);
+                if (user && user.email) {
+                  userEmail = user.email;
+                  // Salvar o email para uso futuro
+                  localStorage.setItem("adminEmail", user.email);
+                }
+              }
+            }
+          } catch (decodeError) {
+            console.error('Erro ao decodificar JWT:', decodeError);
+          }
+        }
+
+        if (!userEmail) {
+          toast({
+            title: "Token inválido",
+            description: "Token de autenticação inválido. Faça login novamente.",
+            variant: "destructive",
+          });
+          navigate("/login");
+          return;
+        }
+
         const loginDate = new Date(loginTime);
         const currentDate = new Date();
         const hoursDiff = (currentDate.getTime() - loginDate.getTime()) / (1000 * 60 * 60);
@@ -37,6 +69,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         if (hoursDiff > 24) {
           localStorage.removeItem("adminToken");
           localStorage.removeItem("adminLoginTime");
+          localStorage.removeItem("adminEmail");
+          localStorage.removeItem("hasShownWelcome");
           
           toast({
             title: "Sessão expirada",
@@ -48,10 +82,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         }
 
         // Verificar se o usuário ainda existe no sistema
-        const user = adminService.getUserByEmail(tokenData.email);
+        const user = await adminService.getUserByEmail(userEmail);
         if (!user) {
           localStorage.removeItem("adminToken");
           localStorage.removeItem("adminLoginTime");
+          localStorage.removeItem("adminEmail");
+          localStorage.removeItem("hasShownWelcome");
           
           toast({
             title: "Usuário não encontrado",
@@ -63,12 +99,14 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         }
 
         // Atualizar último login
-        adminService.updateLastLogin(tokenData.email);
+        await adminService.updateLastLogin(userEmail);
 
       } catch (error) {
         console.error('Erro na verificação de autenticação:', error);
         localStorage.removeItem("adminToken");
         localStorage.removeItem("adminLoginTime");
+        localStorage.removeItem("adminEmail");
+        localStorage.removeItem("hasShownWelcome");
         
         toast({
           title: "Erro de autenticação",

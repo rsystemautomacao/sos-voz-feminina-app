@@ -46,9 +46,61 @@ export interface PasswordReset {
 
 class AdminService {
   private readonly SUPER_ADMIN_EMAIL = 'sosvozfeminina@administrador.com';
+  private userCache = new Map<string, { user: any; timestamp: number }>();
+  private cacheTimeout = 5 * 60 * 1000; // 5 minutos
 
   constructor() {
     // O super admin será inicializado no backend
+  }
+
+  // Limpar cache de usuário
+  clearUserCache(email?: string) {
+    if (email) {
+      this.userCache.delete(email);
+    } else {
+      this.userCache.clear();
+    }
+  }
+
+  // Logout e limpeza de cache
+  async logout(email?: string) {
+    try {
+      if (email) {
+        await this.logAction(email, 'LOGOUT', 'Logout realizado');
+        this.clearUserCache(email);
+      }
+      
+      // Limpar localStorage
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminEmail');
+      localStorage.removeItem('adminLoginTime');
+      localStorage.removeItem('hasShownWelcome');
+      localStorage.removeItem('lastWelcomeTime');
+      
+      // Limpar todo o cache
+      this.clearUserCache();
+    } catch (error) {
+      console.error('Erro no logout:', error);
+    }
+  }
+
+  // Forçar atualização (ignora cache)
+  async getUserByEmailForce(email: string): Promise<AdminUser | null> {
+    try {
+      const response = await apiService.request(`/admin/users/${encodeURIComponent(email)}`);
+      const user = response.user || null;
+      
+      // Atualizar cache com dados frescos
+      this.userCache.set(email, {
+        user: user,
+        timestamp: Date.now()
+      });
+      
+      return user;
+    } catch (error) {
+      console.error('Erro ao buscar usuário:', error);
+      return null;
+    }
   }
 
   // Gestão de Usuários
@@ -64,10 +116,35 @@ class AdminService {
 
   async getUserByEmail(email: string): Promise<AdminUser | null> {
     try {
+      // Verificar cache primeiro
+      const cached = this.userCache.get(email);
+      if (cached && (Date.now() - cached.timestamp) < this.cacheTimeout) {
+        return cached.user;
+      }
+
+      // Se não estiver em cache ou expirado, buscar no servidor
       const response = await apiService.request(`/admin/users/${encodeURIComponent(email)}`);
-      return response.user || null;
+      const user = response.user || null;
+      
+      // Armazenar no cache
+      this.userCache.set(email, {
+        user: user,
+        timestamp: Date.now()
+      });
+      
+      return user;
     } catch (error) {
       console.error('Erro ao buscar usuário:', error);
+      return null;
+    }
+  }
+
+  async getUserById(userId: string): Promise<AdminUser | null> {
+    try {
+      const response = await apiService.request(`/admin/users/id/${userId}`);
+      return response.user || null;
+    } catch (error) {
+      console.error('Erro ao buscar usuário por ID:', error);
       return null;
     }
   }
@@ -144,10 +221,23 @@ class AdminService {
         body: JSON.stringify({ email, password })
       });
       
-      if (response.user) {
+      if (response.user && response.token) {
+        // Limpar cache do usuário após login bem-sucedido
+        this.clearUserCache(email);
+        
+        // Salvar o token no localStorage
+        localStorage.setItem('adminToken', response.token);
+        // Salvar o email para uso posterior
+        localStorage.setItem('adminEmail', response.user.email);
+        
         await this.updateLastLogin(email);
         await this.logAction(email, 'LOGIN', 'Login realizado com sucesso');
-        return response.user;
+        
+        // Retornar usuário com token
+        return {
+          ...response.user,
+          token: response.token
+        };
       }
       
       return null;
@@ -202,7 +292,7 @@ class AdminService {
   async isSuperAdmin(email: string): Promise<boolean> {
     try {
       const user = await this.getUserByEmail(email);
-      return user?.role === 'super_admin';
+    return user?.role === 'super_admin';
     } catch (error) {
       console.error('Erro ao verificar se é super admin:', error);
       return false;
@@ -240,8 +330,8 @@ class AdminService {
         method: 'DELETE',
         body: JSON.stringify({ adminEmail })
       });
-      
-      // Log da ação
+
+    // Log da ação
       await this.logAction(adminEmail, 'DELETE_USER', `Usuário ${userEmail} excluído do sistema`);
     } catch (error) {
       console.error('Erro ao excluir usuário:', error);
@@ -272,13 +362,13 @@ class AdminService {
       const response = await apiService.request('/admin/password-reset', {
         method: 'POST',
         body: JSON.stringify({
-          userEmail,
+      userEmail,
           adminEmail,
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 horas
         })
       });
-      
-      // Log da ação
+
+    // Log da ação
       await this.logAction(adminEmail, 'PASSWORD_RESET', `Reset de senha criado para ${userEmail}`);
       
       return `${window.location.origin}/admin/reset-password?token=${response.token}`;
@@ -329,7 +419,7 @@ class AdminService {
       };
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error);
-      return {
+    return {
         totalAdmins: 0,
         activeAdmins: 0,
         superAdmins: 0,

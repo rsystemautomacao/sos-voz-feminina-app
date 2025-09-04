@@ -5,16 +5,33 @@ class ApiService {
     this.baseURL = API_BASE_URL;
   }
 
+  // Obter token do localStorage
+  private getAuthToken(): string | null {
+    return localStorage.getItem('adminToken');
+  }
+
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     
+    // Obter token de autenticação
+    const token = this.getAuthToken();
+    
     const config = {
       headers: {
-        'Content-Type': 'application/json',
         ...options.headers,
       },
       ...options,
     };
+
+    // Só adicionar Content-Type se não for FormData
+    if (!(options.body instanceof FormData)) {
+      config.headers['Content-Type'] = 'application/json';
+    }
+
+    // Adicionar token de autenticação se disponível
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
 
     try {
       const response = await fetch(url, config);
@@ -41,13 +58,13 @@ class ApiService {
     formData.append('dataOcorrido', denunciaData.dataOcorrido);
     
     if (denunciaData.localizacao) {
-      if (denunciaData.localizacao.cidade) {
+      if (denunciaData.localizacao?.cidade) {
         formData.append('localizacao[cidade]', denunciaData.localizacao.cidade);
       }
-      if (denunciaData.localizacao.estado) {
+      if (denunciaData.localizacao?.estado) {
         formData.append('localizacao[estado]', denunciaData.localizacao.estado);
       }
-      if (denunciaData.localizacao.bairro) {
+      if (denunciaData.localizacao?.bairro) {
         formData.append('localizacao[bairro]', denunciaData.localizacao.bairro);
       }
     }

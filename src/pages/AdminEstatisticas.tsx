@@ -31,12 +31,15 @@ const AdminEstatisticas = () => {
     loadEstatisticas();
   }, [periodo]);
 
-  const loadEstatisticas = () => {
+  const loadEstatisticas = async () => {
     setIsLoading(true);
     
     try {
-      const denuncias = denunciaService.getDenuncias();
-      const adminStats = adminService.getAdminStats();
+      const denuncias = await denunciaService.getDenuncias();
+      const adminStats = await adminService.getAdminStats();
+      
+      // Garantir que denuncias seja um array
+      const denunciasArray = Array.isArray(denuncias) ? denuncias : [];
       
       // Calcular período
       const hoje = new Date();
@@ -60,7 +63,7 @@ const AdminEstatisticas = () => {
       }
 
       // Filtrar denúncias por período
-      const denunciasFiltradas = denuncias.filter(denuncia => 
+      const denunciasFiltradas = denunciasArray.filter(denuncia => 
         new Date(denuncia.dataCriacao) >= dataInicio
       );
 
@@ -92,7 +95,7 @@ const AdminEstatisticas = () => {
       }).reverse();
 
       const tendenciaTemporal = ultimos7Dias.map(data => {
-        const count = denuncias.filter(denuncia => 
+        const count = denunciasArray.filter(denuncia => 
           denuncia.dataCriacao.startsWith(data)
         ).length;
         return { data, count };
@@ -100,7 +103,7 @@ const AdminEstatisticas = () => {
 
       // Estatísticas por localização
       const localizacoes = denunciasFiltradas.reduce((acc: any, denuncia) => {
-        if (denuncia.localizacao.estado) {
+        if (denuncia.localizacao?.estado) {
           acc[denuncia.localizacao.estado] = (acc[denuncia.localizacao.estado] || 0) + 1;
         }
         return acc;
@@ -108,7 +111,7 @@ const AdminEstatisticas = () => {
 
       setEstatisticas({
         total: denunciasFiltradas.length,
-        totalGeral: denuncias.length,
+        totalGeral: denunciasArray.length,
         tiposViolencia,
         statusCount,
         prioridadeCount,
@@ -136,10 +139,11 @@ const AdminEstatisticas = () => {
     try {
       if (formato === 'excel') {
         // Exportação Excel com encoding correto
-        const dados = denunciaService.getDenuncias();
+        const dados = await denunciaService.getDenuncias();
+        const dadosArray = Array.isArray(dados) ? dados : [];
         const csvContent = [
           ['ID Público', 'Tipo Violência', 'Status', 'Prioridade', 'Data Criação', 'Localização'],
-          ...dados.map(d => [
+          ...dadosArray.map(d => [
             d.idPublico || '',
             d.tipoViolencia || '',
             d.status || '',
@@ -184,7 +188,7 @@ const AdminEstatisticas = () => {
   const exportarPDF = async () => {
     try {
       // Criar conteúdo HTML para o PDF
-      const dados = denunciaService.getDenuncias();
+      const dados = await denunciaService.getDenuncias();
       const htmlContent = `
         <!DOCTYPE html>
         <html>
@@ -369,7 +373,7 @@ const AdminEstatisticas = () => {
               <CardContent>
                 <div className="text-2xl font-bold">{estatisticas.total}</div>
                 <p className="text-xs text-muted-foreground">
-                  +{estatisticas.totalGeral - estatisticas.total} no total geral
+                  +{Math.max(0, (estatisticas.totalGeral || 0) - (estatisticas.total || 0))} no total geral
                 </p>
               </CardContent>
             </Card>
