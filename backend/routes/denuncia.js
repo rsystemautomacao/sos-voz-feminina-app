@@ -189,6 +189,20 @@ router.get('/stats/estatisticas', async (req, res) => {
   }
 });
 
+// GET /api/denuncias/public/:idPublico - Buscar denúncia por ID público
+router.get('/public/:idPublico', async (req, res) => {
+  try {
+    const denuncia = await Denuncia.findOne({ idPublico: req.params.idPublico });
+    if (!denuncia) {
+      return res.status(404).json({ error: 'Denúncia não encontrada' });
+    }
+    res.json({ denuncia });
+  } catch (error) {
+    console.error('Erro ao buscar denúncia por ID público:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // GET /api/denuncias/:id - Buscar denúncia por ID
 router.get('/:id', async (req, res) => {
   try {

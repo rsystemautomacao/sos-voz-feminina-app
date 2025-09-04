@@ -84,7 +84,7 @@ class ApiService {
   }
 
   async consultarDenuncia(hash) {
-    return this.request(`/denuncias/${hash}`);
+    return this.request(`/denuncias/public/${hash}`);
   }
 
   async atualizarDenuncia(hash, dados) {
