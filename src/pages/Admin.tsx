@@ -19,7 +19,10 @@ import {
   Play,
   Pause,
   Image,
-  Volume2
+  Volume2,
+  Upload,
+  Archive,
+  Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
