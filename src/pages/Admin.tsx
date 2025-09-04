@@ -49,6 +49,7 @@ const Admin = () => {
   const [showStatusConfirm, setShowStatusConfirm] = useState(false);
   const [pendingStatusChange, setPendingStatusChange] = useState<{id: string, status: Denuncia['status']} | null>(null);
   const [currentAdminEmail, setCurrentAdminEmail] = useState("");
+  const [zoomedImage, setZoomedImage] = useState<{src: string, alt: string} | null>(null);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -408,49 +409,53 @@ const Admin = () => {
         )}
 
         {/* Filtros */}
-        <Card className="shadow-soft mb-6">
+        <Card className="shadow-lg mb-6 border-0 bg-gradient-to-r from-white to-gray-50">
           <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex flex-col lg:flex-row gap-6">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                   <Input
-                    placeholder="Buscar denúncias..."
+                    placeholder="Buscar denúncias por tipo, localização ou relato..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-12 h-12 border-2 border-gray-200 focus:border-blue-400 rounded-xl shadow-sm"
                   />
                 </div>
               </div>
               
-              <div className="flex gap-2">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos</SelectItem>
-                    <SelectItem value="pendente">Pendentes</SelectItem>
-                    <SelectItem value="analisando">Em Análise</SelectItem>
-                    <SelectItem value="resolvido">Resolvidas</SelectItem>
-                    <SelectItem value="arquivado">Arquivadas</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex gap-3">
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-40 h-12 border-2 border-gray-200 focus:border-blue-400 rounded-xl shadow-sm">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="pendente">Pendentes</SelectItem>
+                      <SelectItem value="analisando">Em Análise</SelectItem>
+                      <SelectItem value="resolvido">Resolvidas</SelectItem>
+                      <SelectItem value="arquivado">Arquivadas</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                <Select value={prioridadeFilter} onValueChange={setPrioridadeFilter}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Prioridade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todas</SelectItem>
-                    <SelectItem value="urgente">Urgente</SelectItem>
-                    <SelectItem value="alta">Alta</SelectItem>
-                    <SelectItem value="media">Média</SelectItem>
-                    <SelectItem value="baixa">Baixa</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium text-gray-700 mb-2">Prioridade</label>
+                  <Select value={prioridadeFilter} onValueChange={setPrioridadeFilter}>
+                    <SelectTrigger className="w-40 h-12 border-2 border-gray-200 focus:border-blue-400 rounded-xl shadow-sm">
+                      <SelectValue placeholder="Prioridade" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todas</SelectItem>
+                      <SelectItem value="urgente">Urgente</SelectItem>
+                      <SelectItem value="alta">Alta</SelectItem>
+                      <SelectItem value="media">Média</SelectItem>
+                      <SelectItem value="baixa">Baixa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -465,56 +470,83 @@ const Admin = () => {
         ) : (
           <div className="space-y-4">
             {filteredDenuncias.map((denuncia) => (
-              <Card key={denuncia._id || denuncia.id} className="shadow-soft hover:shadow-strong transition-shadow cursor-pointer" onClick={() => setSelectedDenuncia(denuncia)}>
+              <Card key={denuncia._id || denuncia.id} className="group shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-white to-gray-50 hover:from-blue-50 hover:to-indigo-50" onClick={() => setSelectedDenuncia(denuncia)}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <Badge className={getStatusColor(denuncia.status)}>
-                          <div className="flex items-center space-x-1">
-                            {getStatusIcon(denuncia.status)}
-                            <span className="capitalize">{denuncia.status}</span>
-                          </div>
-                        </Badge>
-                        {denuncia.prioridade && (
-                          <Badge className={getPrioridadeColor(denuncia.prioridade)}>
-                            <span className="capitalize">{denuncia.prioridade}</span>
+                      {/* Header com badges e ID */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <Badge className={`${getStatusColor(denuncia.status)} px-3 py-1 text-sm font-medium shadow-sm`}>
+                            <div className="flex items-center space-x-2">
+                              {getStatusIcon(denuncia.status)}
+                              <span className="capitalize">{denuncia.status}</span>
+                            </div>
                           </Badge>
-                        )}
-                        <span className="text-sm text-muted-foreground">ID: #{denuncia.idPublico}</span>
+                          {denuncia.prioridade && (
+                            <Badge className={`${getPrioridadeColor(denuncia.prioridade)} px-3 py-1 text-sm font-medium shadow-sm`}>
+                              <span className="capitalize">{denuncia.prioridade}</span>
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-mono">
+                            #{denuncia.idPublico}
+                          </span>
+                        </div>
                       </div>
                       
-                      <h3 className="font-semibold text-lg mb-2 capitalize">
-                        {denuncia.tipoViolencia.replace('_', ' ')}
-                      </h3>
+                      {/* Tipo de violência */}
+                      <div className="mb-3">
+                        <h3 className="font-bold text-xl text-gray-800 capitalize group-hover:text-blue-700 transition-colors">
+                          {denuncia.tipoViolencia.replace('_', ' ')}
+                        </h3>
+                      </div>
                       
-                      <p className="text-muted-foreground mb-3 line-clamp-2">
-                        {denuncia.relato}
-                      </p>
+                      {/* Relato */}
+                      <div className="mb-4">
+                        <p className="text-gray-600 line-clamp-2 leading-relaxed">
+                          {denuncia.relato}
+                        </p>
+                      </div>
                       
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <div className="flex items-center space-x-1">
-                          <Calendar size={14} />
-                          <span>{formatDate(denuncia.dataCriacao)}</span>
+                      {/* Metadados */}
+                      <div className="flex items-center space-x-6 text-sm">
+                        <div className="flex items-center space-x-2 text-gray-500">
+                          <div className="p-1 bg-blue-100 rounded-full">
+                            <Calendar size={14} className="text-blue-600" />
+                          </div>
+                          <span className="font-medium">{formatDate(denuncia.dataCriacao)}</span>
                         </div>
                         {denuncia.localizacao?.cidade && (
-                          <div className="flex items-center space-x-1">
-                            <MapPin size={14} />
-                            <span>{denuncia.localizacao.cidade}, {denuncia.localizacao.estado}</span>
+                          <div className="flex items-center space-x-2 text-gray-500">
+                            <div className="p-1 bg-green-100 rounded-full">
+                              <MapPin size={14} className="text-green-600" />
+                            </div>
+                            <span className="font-medium">{denuncia.localizacao.cidade}, {denuncia.localizacao.estado}</span>
                           </div>
                         )}
                         {denuncia.evidencias && denuncia.evidencias.length > 0 && (
-                          <div className="flex items-center space-x-1">
-                            <FileText size={14} />
-                            <span>{denuncia.evidencias.length} evidência(s)</span>
+                          <div className="flex items-center space-x-2 text-gray-500">
+                            <div className="p-1 bg-purple-100 rounded-full">
+                              <FileText size={14} className="text-purple-600" />
+                            </div>
+                            <span className="font-medium">{denuncia.evidencias.length} evidência(s)</span>
                           </div>
                         )}
                       </div>
                     </div>
                     
-                    <Button variant="ghost" size="sm">
-                      <Eye size={16} />
-                    </Button>
+                    {/* Botão de visualizar */}
+                    <div className="ml-4">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors"
+                      >
+                        <Eye size={18} />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -681,7 +713,15 @@ const Admin = () => {
                         
                         {evidencia.tipo === 'image' ? (
                           <div className="space-y-3">
-                            <div className="relative group">
+                            <div 
+                              className="relative group cursor-pointer"
+                              onClick={() => {
+                                const imageSrc = evidencia.dados.startsWith('/uploads/') 
+                                  ? `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${evidencia.dados}`
+                                  : evidencia.dados;
+                                setZoomedImage({ src: imageSrc, alt: evidencia.nome });
+                              }}
+                            >
                               <img 
                                 src={evidencia.dados.startsWith('/uploads/') 
                                   ? `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${evidencia.dados}`
@@ -699,6 +739,11 @@ const Admin = () => {
                                   <div className="bg-white/90 rounded-full p-2">
                                     <Image size={20} className="text-indigo-600" />
                                   </div>
+                                </div>
+                              </div>
+                              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="bg-black/50 text-white px-2 py-1 rounded text-xs">
+                                  Clique para ampliar
                                 </div>
                               </div>
                             </div>
@@ -865,6 +910,34 @@ const Admin = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Modal de Zoom da Imagem */}
+      {zoomedImage && (
+        <div 
+          className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[60]"
+          onClick={() => setZoomedImage(null)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-4 right-4 z-10 bg-black/50 text-white hover:bg-black/70"
+              onClick={() => setZoomedImage(null)}
+            >
+              <X size={24} />
+            </Button>
+            <img
+              src={zoomedImage.src}
+              alt={zoomedImage.alt}
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-2 rounded-lg text-sm">
+              {zoomedImage.alt}
+            </div>
+          </div>
         </div>
       )}
 
