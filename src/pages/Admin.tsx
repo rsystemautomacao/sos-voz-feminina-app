@@ -657,7 +657,7 @@ const Admin = () => {
 
               <div className="flex flex-wrap gap-2">
                 <Button
-                  onClick={() => updateDenunciaPrioridade(selectedDenuncia.id, 'urgente')}
+                  onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'urgente')}
                   disabled={selectedDenuncia.prioridade === 'urgente'}
                   size="sm"
                   variant="outline"
@@ -666,7 +666,7 @@ const Admin = () => {
                   Prioridade Urgente
                 </Button>
                 <Button
-                  onClick={() => updateDenunciaPrioridade(selectedDenuncia.id, 'alta')}
+                  onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'alta')}
                   disabled={selectedDenuncia.prioridade === 'alta'}
                   size="sm"
                   variant="outline"
@@ -675,7 +675,7 @@ const Admin = () => {
                   Prioridade Alta
                 </Button>
                 <Button
-                  onClick={() => updateDenunciaPrioridade(selectedDenuncia.id, 'media')}
+                  onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'media')}
                   disabled={selectedDenuncia.prioridade === 'media'}
                   size="sm"
                   variant="outline"
@@ -684,7 +684,7 @@ const Admin = () => {
                   Prioridade Média
                 </Button>
                 <Button
-                  onClick={() => updateDenunciaPrioridade(selectedDenuncia.id, 'baixa')}
+                  onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'baixa')}
                   disabled={selectedDenuncia.prioridade === 'baixa'}
                   size="sm"
                   variant="outline"
