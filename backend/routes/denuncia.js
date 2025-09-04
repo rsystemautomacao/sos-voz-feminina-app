@@ -271,6 +271,46 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /api/denuncias/:id/observacoes - Salvar apenas observações
+router.put('/:id/observacoes', authenticateToken, async (req, res) => {
+  try {
+    const { observacoes, adminEmail } = req.body;
+    
+    if (!adminEmail) {
+      return res.status(400).json({ error: 'Email do administrador é obrigatório' });
+    }
+
+    const denuncia = await Denuncia.findById(req.params.id);
+    if (!denuncia) {
+      return res.status(404).json({ error: 'Denúncia não encontrada' });
+    }
+
+    // Atualizar apenas as observações
+    const denunciaAtualizada = await Denuncia.findByIdAndUpdate(
+      req.params.id,
+      { 
+        observacoes: observacoes || '',
+        dataAtualizacao: new Date()
+      },
+      { new: true }
+    );
+
+    // Criar log de auditoria
+    await createLog(
+      adminEmail, 
+      'ADD_OBSERVATION', 
+      `Observações adicionadas: ${observacoes || 'Observações removidas'}`, 
+      req, 
+      denuncia.idPublico
+    );
+
+    res.json({ denuncia: denunciaAtualizada });
+  } catch (error) {
+    console.error('Erro ao salvar observações:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // PUT /api/denuncias/:id/prioridade - Atualizar prioridade
 router.put('/:id/prioridade', authenticateToken, async (req, res) => {
   try {

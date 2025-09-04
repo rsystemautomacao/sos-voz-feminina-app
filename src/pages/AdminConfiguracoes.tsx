@@ -338,6 +338,7 @@ const AdminConfiguracoes = () => {
       case 'EXPORT_DATA': return <FileText size={16} />;
       case 'INVITE_USER': return <UserPlus size={16} />;
       case 'CHANGE_USER_ROLE': return <Key size={16} />;
+      case 'ADD_OBSERVATION': return <FileText size={16} />;
       default: return <Settings size={16} />;
     }
   };
@@ -351,6 +352,7 @@ const AdminConfiguracoes = () => {
       case 'EXPORT_DATA': return 'bg-purple-100 text-purple-800';
       case 'INVITE_USER': return 'bg-pink-100 text-pink-800';
       case 'CHANGE_USER_ROLE': return 'bg-purple-100 text-purple-800';
+      case 'ADD_OBSERVATION': return 'bg-blue-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };

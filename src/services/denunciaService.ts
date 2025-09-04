@@ -115,6 +115,20 @@ class DenunciaService {
     }
   }
 
+  // Salvar apenas observações (sem mudar status)
+  async salvarObservacoes(id: string, observacoes: string): Promise<Denuncia> {
+    try {
+      const response = await apiService.request(`/denuncias/${id}/observacoes`, {
+        method: 'PUT',
+        body: JSON.stringify({ observacoes })
+      });
+      return response.denuncia;
+    } catch (error) {
+      console.error('Erro ao salvar observações:', error);
+      throw error;
+    }
+  }
+
   // Filtrar denúncias
   async filtrarDenuncias(filtros: {
     status?: Denuncia['status'];

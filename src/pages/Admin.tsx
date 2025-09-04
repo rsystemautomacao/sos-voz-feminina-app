@@ -204,7 +204,40 @@ const Admin = () => {
     }
   };
 
+  const salvarObservacoes = async (id: string) => {
+    if (!observacoes.trim()) {
+      toast({
+        title: "Campo vazio",
+        description: "Por favor, digite uma observação antes de salvar.",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    try {
+      await denunciaService.salvarObservacoes(id, observacoes);
+      
+      // Recarregar dados
+      await loadDenuncias();
+      
+      toast({
+        title: "✅ Observações salvas com sucesso!",
+        description: "As observações foram salvas e registradas no histórico de auditoria.",
+        duration: 2000,
+      });
+      
+      // Limpar campo de observações
+      setObservacoes("");
+      
+    } catch (error) {
+      console.error('Erro ao salvar observações:', error);
+      toast({
+        title: "❌ Erro ao salvar observações",
+        description: "Não foi possível salvar as observações. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Funções para reproduzir áudio
   const playAudio = (evidencia: Evidencia) => {
@@ -415,7 +448,7 @@ const Admin = () => {
         ) : (
           <div className="space-y-4">
             {filteredDenuncias.map((denuncia) => (
-              <Card key={denuncia._id || denuncia.idPublico || denuncia.id} className="shadow-soft hover:shadow-strong transition-shadow cursor-pointer" onClick={() => setSelectedDenuncia(denuncia)}>
+              <Card key={denuncia.id || denuncia.idPublico} className="shadow-soft hover:shadow-strong transition-shadow cursor-pointer" onClick={() => setSelectedDenuncia(denuncia)}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -627,18 +660,29 @@ const Admin = () => {
                   onChange={(e) => setObservacoes(e.target.value)}
                   className="min-h-[100px]"
                 />
+                <div className="mt-2">
+                  <Button
+                    onClick={() => salvarObservacoes(selectedDenuncia.id || selectedDenuncia.idPublico)}
+                    disabled={!observacoes.trim()}
+                    size="sm"
+                    variant="outline"
+                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                  >
+                    💾 Salvar Observações
+                  </Button>
+                </div>
               </div>
               
               <div className="flex flex-wrap gap-2 pt-4">
                 <Button
-                  onClick={() => updateDenunciaStatus(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'analisando')}
+                  onClick={() => updateDenunciaStatus(selectedDenuncia.id || selectedDenuncia.idPublico, 'analisando')}
                   disabled={selectedDenuncia.status === 'analisando'}
                   size="sm"
                 >
                   Marcar como Em Análise
                 </Button>
                 <Button
-                  onClick={() => updateDenunciaStatus(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'resolvido')}
+                  onClick={() => updateDenunciaStatus(selectedDenuncia.id || selectedDenuncia.idPublico, 'resolvido')}
                   disabled={selectedDenuncia.status === 'resolvido'}
                   size="sm"
                   variant="outline"
@@ -646,7 +690,7 @@ const Admin = () => {
                   Marcar como Resolvida
                 </Button>
                 <Button
-                  onClick={() => updateDenunciaStatus(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'arquivado')}
+                  onClick={() => updateDenunciaStatus(selectedDenuncia.id || selectedDenuncia.idPublico, 'arquivado')}
                   disabled={selectedDenuncia.status === 'arquivado'}
                   size="sm"
                   variant="outline"
@@ -657,7 +701,7 @@ const Admin = () => {
 
               <div className="flex flex-wrap gap-2">
                 <Button
-                  onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'urgente')}
+                  onClick={() => updateDenunciaPrioridade(selectedDenuncia.id || selectedDenuncia.idPublico, 'urgente')}
                   disabled={selectedDenuncia.prioridade === 'urgente'}
                   size="sm"
                   variant="outline"
@@ -666,7 +710,7 @@ const Admin = () => {
                   Prioridade Urgente
                 </Button>
                 <Button
-                  onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'alta')}
+                  onClick={() => updateDenunciaPrioridade(selectedDenuncia.id || selectedDenuncia.idPublico, 'alta')}
                   disabled={selectedDenuncia.prioridade === 'alta'}
                   size="sm"
                   variant="outline"
@@ -675,7 +719,7 @@ const Admin = () => {
                   Prioridade Alta
                 </Button>
                 <Button
-                  onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'media')}
+                  onClick={() => updateDenunciaPrioridade(selectedDenuncia.id || selectedDenuncia.idPublico, 'media')}
                   disabled={selectedDenuncia.prioridade === 'media'}
                   size="sm"
                   variant="outline"
@@ -684,7 +728,7 @@ const Admin = () => {
                   Prioridade Média
                 </Button>
                 <Button
-                  onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.idPublico || selectedDenuncia.id, 'baixa')}
+                  onClick={() => updateDenunciaPrioridade(selectedDenuncia.id || selectedDenuncia.idPublico, 'baixa')}
                   disabled={selectedDenuncia.prioridade === 'baixa'}
                   size="sm"
                   variant="outline"
