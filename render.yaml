@@ -1,0 +1,38 @@
+services:
+  # Frontend (Vercel)
+  - type: web
+    name: sos-voz-feminina-frontend
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+  # Backend (Render)
+  - type: web
+    name: sos-voz-feminina-backend
+    env: node
+    plan: starter
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: sos-voz-feminina-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "900000"
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: "1000"
+
+databases:
+  - name: sos-voz-feminina-db
+    plan: starter
+    databaseName: sos-voz-feminina
