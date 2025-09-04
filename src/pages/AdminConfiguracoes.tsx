@@ -15,7 +15,8 @@ import {
   UserPlus,
   FileText,
   Calendar,
-  Lock
+  Lock,
+  Key
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { adminService, AdminUser, AdminLog } from "@/services/adminService";
 import AdminNavigation from "@/components/AdminNavigation";
@@ -42,6 +44,7 @@ const AdminConfiguracoes = () => {
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [inviteToDelete, setInviteToDelete] = useState<any>(null);
   const [isDeletingInvite, setIsDeletingInvite] = useState(false);
+  const [isTogglingRole, setIsTogglingRole] = useState(false);
   
   const { toast } = useToast();
 
@@ -268,6 +271,54 @@ const AdminConfiguracoes = () => {
     }
   };
 
+  const handleToggleUserRole = async (user: AdminUser) => {
+    const canInvite = await adminService.canInviteUsers(currentAdminEmail);
+    if (!canInvite) {
+      toast({
+        title: "Permissão negada",
+        description: "Apenas super administradores podem alterar roles de usuários.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (user.email === currentAdminEmail) {
+      toast({
+        title: "Operação inválida",
+        description: "Você não pode alterar seu próprio role.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsTogglingRole(true);
+    
+    try {
+      const newRole = user.role === 'super_admin' ? 'admin' : 'super_admin';
+      await adminService.toggleUserRole(user.email, newRole, currentAdminEmail);
+      
+      const roleText = newRole === 'super_admin' ? 'Super Admin' : 'Admin';
+      
+      toast({
+        title: "Role alterado com sucesso!",
+        description: `${user.email} agora é ${roleText}.`,
+        duration: 2000,
+      });
+      
+      loadData(); // Recarregar dados para atualizar a interface
+      
+    } catch (error) {
+      toast({
+        title: "Erro ao alterar role",
+        description: error instanceof Error ? error.message : "Erro desconhecido",
+        variant: "destructive",
+        duration: 2000,
+      });
+    } finally {
+      setIsTogglingRole(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -286,6 +337,7 @@ const AdminConfiguracoes = () => {
       case 'UPDATE_PRIORITY': return <AlertTriangle size={16} />;
       case 'EXPORT_DATA': return <FileText size={16} />;
       case 'INVITE_USER': return <UserPlus size={16} />;
+      case 'CHANGE_USER_ROLE': return <Key size={16} />;
       default: return <Settings size={16} />;
     }
   };
@@ -298,6 +350,7 @@ const AdminConfiguracoes = () => {
       case 'UPDATE_PRIORITY': return 'bg-orange-100 text-orange-800';
       case 'EXPORT_DATA': return 'bg-purple-100 text-purple-800';
       case 'INVITE_USER': return 'bg-pink-100 text-pink-800';
+      case 'CHANGE_USER_ROLE': return 'bg-purple-100 text-purple-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -469,6 +522,21 @@ const AdminConfiguracoes = () => {
                                 <Lock size={16} />
                                 <span className="hidden sm:inline">Reset Senha</span>
                               </Button>
+                              
+                              {/* Toggle Super Admin */}
+                              <div className="flex items-center space-x-2 px-3 py-2 border border-purple-200 rounded-md bg-purple-50">
+                                <Key size={16} className="text-purple-600" />
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-sm text-purple-700 font-medium">Super Admin</span>
+                                  <Switch
+                                    checked={user.role === 'super_admin'}
+                                    onCheckedChange={() => handleToggleUserRole(user)}
+                                    disabled={isTogglingRole}
+                                    className="data-[state=checked]:bg-purple-600"
+                                  />
+                                </div>
+                              </div>
+                              
                               <Button
                                 variant="outline"
                                 size="sm"

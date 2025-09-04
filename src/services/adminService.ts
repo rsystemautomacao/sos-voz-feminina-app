@@ -404,6 +404,22 @@ class AdminService {
     }
   }
 
+  // Alterar role do usuário (admin/super_admin)
+  async toggleUserRole(userEmail: string, newRole: 'admin' | 'super_admin', adminEmail: string): Promise<void> {
+    try {
+      await apiService.request(`/admin/users/${userEmail}/role`, {
+        method: 'PUT',
+        body: JSON.stringify({ 
+          role: newRole,
+          adminEmail 
+        })
+      });
+    } catch (error) {
+      console.error('Erro ao alterar role do usuário:', error);
+      throw error;
+    }
+  }
+
 
 
   // Estatísticas de Administradores

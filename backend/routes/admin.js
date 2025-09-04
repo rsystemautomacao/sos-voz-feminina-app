@@ -210,6 +210,52 @@ router.delete('/users/:email', requireSuperAdmin, async (req, res) => {
   }
 });
 
+// Alterar role do usuário (admin/super_admin)
+router.put('/users/:email/role', requireSuperAdmin, async (req, res) => {
+  try {
+    const { role, adminEmail } = req.body;
+    
+    // Validar role
+    if (!['admin', 'super_admin'].includes(role)) {
+      return res.status(400).json({ error: 'Role inválido. Use "admin" ou "super_admin"' });
+    }
+    
+    // Não permitir alterar o próprio role
+    if (req.params.email === req.user.email) {
+      return res.status(400).json({ error: 'Você não pode alterar seu próprio role' });
+    }
+    
+    const user = await AdminUser.findOne({ email: req.params.email.toLowerCase() });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+    
+    const roleAnterior = user.role;
+    user.role = role;
+    await user.save();
+    
+    await createLog(
+      adminEmail, 
+      'CHANGE_USER_ROLE', 
+      `Role do usuário ${req.params.email} alterado de "${roleAnterior}" para "${role}"`, 
+      req
+    );
+    
+    res.json({ 
+      message: 'Role alterado com sucesso',
+      user: {
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao alterar role do usuário:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // ===== ROTAS DE CONVITES =====
 
 // Criar convite
