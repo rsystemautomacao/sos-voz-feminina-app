@@ -58,12 +58,30 @@ Após configurar as variáveis:
 # Deploy automático via Git
 ```
 
-### Render (Backend)
+### Render (Backend) - CONFIGURAÇÃO MANUAL
 ```bash
-# Conectar repositório no Render
-# Configurar variáveis de ambiente
-# Deploy automático via Git
+# 1. Acessar https://render.com
+# 2. Criar nova Web Service
+# 3. Conectar repositório GitHub
+# 4. Configurar:
+#    - Name: sos-voz-feminina-backend
+#    - Environment: Node
+#    - Build Command: cd backend && npm install
+#    - Start Command: cd backend && npm start
+#    - Plan: Starter (Free)
 ```
+
+## 🚨 PROBLEMA IDENTIFICADO: Backend não está rodando no Render
+
+**Status atual:**
+- ✅ Frontend: Funcionando no Vercel
+- ❌ Backend: 404 - Não encontrado no Render
+- ❌ URL: https://sos-voz-feminina-backend.onrender.com/api/auth/login
+
+**Ação necessária:**
+1. **Deployar backend no Render manualmente**
+2. **Configurar variáveis de ambiente**
+3. **Verificar se está rodando**
 
 ## 📋 CHECKLIST DE VERIFICAÇÃO
 
