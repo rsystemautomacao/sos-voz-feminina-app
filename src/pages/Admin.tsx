@@ -45,6 +45,7 @@ const Admin = () => {
   const [audioRef, setAudioRef] = useState<HTMLAudioElement | null>(null);
   const [showStatusConfirm, setShowStatusConfirm] = useState(false);
   const [pendingStatusChange, setPendingStatusChange] = useState<{id: string, status: Denuncia['status']} | null>(null);
+  const [currentAdminEmail, setCurrentAdminEmail] = useState("");
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -53,6 +54,12 @@ const Admin = () => {
   useEffect(() => {
     loadDenuncias();
     loadEstatisticas();
+    
+    // Obter email do admin do localStorage
+    const storedEmail = localStorage.getItem("adminEmail");
+    if (storedEmail && storedEmail.includes('@')) {
+      setCurrentAdminEmail(storedEmail);
+    }
     
     // Mostrar mensagem de boas-vindas apenas no primeiro login da sessão
     const loginTime = localStorage.getItem("adminLoginTime");
@@ -214,7 +221,9 @@ const Admin = () => {
       return;
     }
 
+
     try {
+      console.log('Salvando observações:', { id, observacoes });
       await denunciaService.salvarObservacoes(id, observacoes);
       
       // Recarregar dados
@@ -245,7 +254,8 @@ const Admin = () => {
       audioRef.pause();
     }
 
-    const audio = new Audio(evidencia.dados);
+    const audioUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${evidencia.dados}`;
+    const audio = new Audio(audioUrl);
     setAudioRef(audio);
     
     audio.onended = () => setPlayingAudio(null);
@@ -448,7 +458,7 @@ const Admin = () => {
         ) : (
           <div className="space-y-4">
             {filteredDenuncias.map((denuncia) => (
-              <Card key={denuncia.id || denuncia.idPublico} className="shadow-soft hover:shadow-strong transition-shadow cursor-pointer" onClick={() => setSelectedDenuncia(denuncia)}>
+              <Card key={denuncia._id || denuncia.id} className="shadow-soft hover:shadow-strong transition-shadow cursor-pointer" onClick={() => setSelectedDenuncia(denuncia)}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -524,13 +534,22 @@ const Admin = () => {
       {/* Modal de Detalhes */}
       {selectedDenuncia && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <CardHeader>
+          <Card className="w-full max-w-5xl max-h-[90vh] overflow-y-auto shadow-2xl border-0">
+            <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
               <div className="flex items-center justify-between">
-                <CardTitle>Detalhes da Denúncia #{selectedDenuncia.idPublico}</CardTitle>
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-white/20 rounded-lg">
+                    <FileText size={24} />
+                  </div>
+                  <div>
+                    <CardTitle className="text-white text-xl">Detalhes da Denúncia</CardTitle>
+                    <p className="text-purple-100 text-sm font-medium">#{selectedDenuncia.idPublico}</p>
+                  </div>
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="text-white hover:bg-white/20"
                   onClick={() => {
                     setSelectedDenuncia(null);
                     setObservacoes("");
@@ -540,98 +559,161 @@ const Admin = () => {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h4 className="font-semibold mb-2">Tipo de Violência</h4>
-                <p className="capitalize">{selectedDenuncia.tipoViolencia.replace('_', ' ')}</p>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-2">Data do Ocorrido</h4>
-                <p>{selectedDenuncia.dataOcorrido}</p>
+            <CardContent className="space-y-8 p-8">
+              {/* Grid de informações principais */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-blue-500 rounded-lg">
+                      <Shield size={20} className="text-white" />
+                    </div>
+                    <h4 className="font-semibold text-blue-900">Tipo de Violência</h4>
+                  </div>
+                  <p className="text-blue-800 capitalize font-medium">{selectedDenuncia.tipoViolencia.replace('_', ' ')}</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border border-green-200">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-green-500 rounded-lg">
+                      <Calendar size={20} className="text-white" />
+                    </div>
+                    <h4 className="font-semibold text-green-900">Data do Ocorrido</h4>
+                  </div>
+                  <p className="text-green-800 font-medium">{selectedDenuncia.dataOcorrido}</p>
+                </div>
               </div>
               
               {selectedDenuncia.localizacao?.cidade && (
-                <div>
-                  <h4 className="font-semibold mb-2">Localização</h4>
-                  <p>{selectedDenuncia.localizacao.cidade}, {selectedDenuncia.localizacao.estado}</p>
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl border border-orange-200">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-orange-500 rounded-lg">
+                      <MapPin size={20} className="text-white" />
+                    </div>
+                    <h4 className="font-semibold text-orange-900">Localização</h4>
+                  </div>
+                  <p className="text-orange-800 font-medium">{selectedDenuncia.localizacao.cidade}, {selectedDenuncia.localizacao.estado}</p>
                   {selectedDenuncia.localizacao.bairro && (
-                    <p className="text-sm text-muted-foreground">Bairro: {selectedDenuncia.localizacao.bairro}</p>
+                    <p className="text-orange-700 text-sm mt-1">Bairro: {selectedDenuncia.localizacao.bairro}</p>
                   )}
                 </div>
               )}
               
-              <div>
-                <h4 className="font-semibold mb-2">Relato</h4>
-                <p className="whitespace-pre-wrap">{selectedDenuncia.relato}</p>
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border border-gray-200">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="p-2 bg-gray-500 rounded-lg">
+                    <FileText size={20} className="text-white" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900">Relato</h4>
+                </div>
+                <div className="bg-white p-4 rounded-lg border border-gray-200">
+                  <p className="whitespace-pre-wrap text-gray-800 leading-relaxed">{selectedDenuncia.relato}</p>
+                </div>
               </div>
               
-              <div>
-                <h4 className="font-semibold mb-2">Status</h4>
-                <div className="flex items-center space-x-2">
-                  <Badge className={getStatusColor(selectedDenuncia.status)}>
-                    <div className="flex items-center space-x-1">
+              {/* Status e Prioridade */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl border border-purple-200">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-purple-500 rounded-lg">
+                      <Activity size={20} className="text-white" />
+                    </div>
+                    <h4 className="font-semibold text-purple-900">Status</h4>
+                  </div>
+                  <Badge className={`${getStatusColor(selectedDenuncia.status)} text-sm px-3 py-1`}>
+                    <div className="flex items-center space-x-2">
                       {getStatusIcon(selectedDenuncia.status)}
-                      <span className="capitalize">{selectedDenuncia.status}</span>
+                      <span className="capitalize font-medium">{selectedDenuncia.status}</span>
                     </div>
                   </Badge>
                 </div>
+
+                {selectedDenuncia.prioridade && (
+                  <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl border border-red-200">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className="p-2 bg-red-500 rounded-lg">
+                        <AlertTriangle size={20} className="text-white" />
+                      </div>
+                      <h4 className="font-semibold text-red-900">Prioridade</h4>
+                    </div>
+                    <Badge className={`${getPrioridadeColor(selectedDenuncia.prioridade)} text-sm px-3 py-1`}>
+                      <span className="capitalize font-medium">{selectedDenuncia.prioridade}</span>
+                    </Badge>
+                  </div>
+                )}
               </div>
 
-              {selectedDenuncia.prioridade && (
-                <div>
-                  <h4 className="font-semibold mb-2">Prioridade</h4>
-                  <Badge className={getPrioridadeColor(selectedDenuncia.prioridade)}>
-                    <span className="capitalize">{selectedDenuncia.prioridade}</span>
-                  </Badge>
-                </div>
-              )}
-
               {selectedDenuncia.evidencias && selectedDenuncia.evidencias.length > 0 && (
-                <div>
-                  <h4 className="font-semibold mb-2">Evidências</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 rounded-xl border border-indigo-200">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <div className="p-2 bg-indigo-500 rounded-lg">
+                      <Upload size={20} className="text-white" />
+                    </div>
+                    <h4 className="font-semibold text-indigo-900 text-lg">Evidências</h4>
+                    <Badge variant="secondary" className="bg-indigo-200 text-indigo-800">
+                      {selectedDenuncia.evidencias.length} arquivo(s)
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {selectedDenuncia.evidencias.map((evidencia, index) => (
-                      <div key={evidencia.id || `evidencia-${index}`} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            {evidencia.tipo === 'image' ? (
-                              <Image className="text-blue-500" size={16} />
-                            ) : (
-                              <Volume2 className="text-green-500" size={16} />
-                            )}
-                            <span className="font-medium text-sm">{evidencia.nome}</span>
+                      <div key={evidencia.id || `evidencia-${index}`} className="bg-white border border-indigo-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <div className={`p-2 rounded-lg ${evidencia.tipo === 'image' ? 'bg-blue-100' : 'bg-green-100'}`}>
+                              {evidencia.tipo === 'image' ? (
+                                <Image className="text-blue-600" size={18} />
+                              ) : (
+                                <Volume2 className="text-green-600" size={18} />
+                              )}
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-900 text-sm">{evidencia.nome}</span>
+                              <p className="text-xs text-gray-500">{formatFileSize(evidencia.tamanho)}</p>
+                            </div>
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            {formatFileSize(evidencia.tamanho)}
-                          </span>
                         </div>
                         
                         {evidencia.tipo === 'image' ? (
-                          <div className="space-y-2">
-                            <img 
-                              src={evidencia.dados} 
-                              alt={evidencia.nome}
-                              className="w-full h-48 object-cover rounded-lg border"
-                            />
+                          <div className="space-y-3">
+                            <div className="relative group">
+                              <img 
+                                src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${evidencia.dados}`} 
+                                alt={evidencia.nome}
+                                className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
+                                onError={(e) => {
+                                  console.error('Erro ao carregar imagem:', evidencia.dados);
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg flex items-center justify-center">
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="bg-white/90 rounded-full p-2">
+                                    <Image size={20} className="text-indigo-600" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         ) : (
-                          <div className="space-y-2">
+                          <div className="space-y-3">
                             <Button
                               onClick={() => playingAudio === evidencia.id ? pauseAudio() : playAudio(evidencia)}
                               variant="outline"
                               size="sm"
-                              className="w-full flex items-center space-x-2"
+                              className={`w-full transition-all duration-200 ${
+                                playingAudio === evidencia.id 
+                                  ? 'bg-green-50 border-green-300 text-green-700 hover:bg-green-100' 
+                                  : 'bg-indigo-50 border-indigo-300 text-indigo-700 hover:bg-indigo-100'
+                              }`}
                             >
                               {playingAudio === evidencia.id ? (
                                 <>
-                                  <Pause size={16} />
-                                  <span>Pausar Áudio</span>
+                                  <Pause size={16} className="mr-2" />
+                                  Pausar Áudio
                                 </>
                               ) : (
                                 <>
-                                  <Play size={16} />
-                                  <span>Reproduzir Áudio</span>
+                                  <Play size={16} className="mr-2" />
+                                  Reproduzir Áudio
                                 </>
                               )}
                             </Button>
@@ -644,98 +726,132 @@ const Admin = () => {
               )}
 
               {selectedDenuncia.observacoes && (
-                <div>
-                  <h4 className="font-semibold mb-2">Observações</h4>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {selectedDenuncia.observacoes}
-                  </p>
+                <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-xl border border-yellow-200">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="p-2 bg-yellow-500 rounded-lg">
+                      <FileText size={20} className="text-white" />
+                    </div>
+                    <h4 className="font-semibold text-yellow-900">Observações Existentes</h4>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-yellow-200">
+                    <p className="text-yellow-800 whitespace-pre-wrap leading-relaxed">
+                      {selectedDenuncia.observacoes}
+                    </p>
+                  </div>
                 </div>
               )}
               
-              <div>
-                <h4 className="font-semibold mb-2">Observações (Opcional)</h4>
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="p-2 bg-blue-500 rounded-lg">
+                    <FileText size={20} className="text-white" />
+                  </div>
+                  <h4 className="font-semibold text-blue-900">Adicionar Observações</h4>
+                </div>
                 <Textarea
                   placeholder="Adicione observações sobre esta denúncia..."
                   value={observacoes}
                   onChange={(e) => setObservacoes(e.target.value)}
-                  className="min-h-[100px]"
+                  className="min-h-[100px] border-blue-200 focus:border-blue-400"
                 />
-                <div className="mt-2">
+                <div className="mt-4">
                   <Button
-                    onClick={() => salvarObservacoes(selectedDenuncia.id || selectedDenuncia.idPublico)}
+                    onClick={() => salvarObservacoes(selectedDenuncia._id || selectedDenuncia.id)}
                     disabled={!observacoes.trim()}
                     size="sm"
-                    variant="outline"
-                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
-                    💾 Salvar Observações
+                    <FileText size={16} className="mr-2" />
+                    Salvar Observações
                   </Button>
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-2 pt-4">
-                <Button
-                  onClick={() => updateDenunciaStatus(selectedDenuncia.id || selectedDenuncia.idPublico, 'analisando')}
-                  disabled={selectedDenuncia.status === 'analisando'}
-                  size="sm"
-                >
-                  Marcar como Em Análise
-                </Button>
-                <Button
-                  onClick={() => updateDenunciaStatus(selectedDenuncia.id || selectedDenuncia.idPublico, 'resolvido')}
-                  disabled={selectedDenuncia.status === 'resolvido'}
-                  size="sm"
-                  variant="outline"
-                >
-                  Marcar como Resolvida
-                </Button>
-                <Button
-                  onClick={() => updateDenunciaStatus(selectedDenuncia.id || selectedDenuncia.idPublico, 'arquivado')}
-                  disabled={selectedDenuncia.status === 'arquivado'}
-                  size="sm"
-                  variant="outline"
-                >
-                  Arquivar
-                </Button>
+              {/* Ações de Status */}
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl border border-purple-200">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="p-2 bg-purple-500 rounded-lg">
+                    <Activity size={20} className="text-white" />
+                  </div>
+                  <h4 className="font-semibold text-purple-900">Alterar Status</h4>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    onClick={() => updateDenunciaStatus(selectedDenuncia._id || selectedDenuncia.id, 'analisando')}
+                    disabled={selectedDenuncia.status === 'analisando'}
+                    size="sm"
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <Activity size={16} className="mr-2" />
+                    Em Análise
+                  </Button>
+                  <Button
+                    onClick={() => updateDenunciaStatus(selectedDenuncia._id || selectedDenuncia.id, 'resolvido')}
+                    disabled={selectedDenuncia.status === 'resolvido'}
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <CheckCircle size={16} className="mr-2" />
+                    Resolvida
+                  </Button>
+                  <Button
+                    onClick={() => updateDenunciaStatus(selectedDenuncia._id || selectedDenuncia.id, 'arquivado')}
+                    disabled={selectedDenuncia.status === 'arquivado'}
+                    size="sm"
+                    className="bg-gray-600 hover:bg-gray-700 text-white"
+                  >
+                    <Archive size={16} className="mr-2" />
+                    Arquivar
+                  </Button>
+                </div>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={() => updateDenunciaPrioridade(selectedDenuncia.id || selectedDenuncia.idPublico, 'urgente')}
-                  disabled={selectedDenuncia.prioridade === 'urgente'}
-                  size="sm"
-                  variant="outline"
-                  className="text-red-600 border-red-200 hover:bg-red-50"
-                >
-                  Prioridade Urgente
-                </Button>
-                <Button
-                  onClick={() => updateDenunciaPrioridade(selectedDenuncia.id || selectedDenuncia.idPublico, 'alta')}
-                  disabled={selectedDenuncia.prioridade === 'alta'}
-                  size="sm"
-                  variant="outline"
-                  className="text-orange-600 border-orange-200 hover:bg-orange-50"
-                >
-                  Prioridade Alta
-                </Button>
-                <Button
-                  onClick={() => updateDenunciaPrioridade(selectedDenuncia.id || selectedDenuncia.idPublico, 'media')}
-                  disabled={selectedDenuncia.prioridade === 'media'}
-                  size="sm"
-                  variant="outline"
-                  className="text-yellow-600 border-yellow-200 hover:bg-yellow-50"
-                >
-                  Prioridade Média
-                </Button>
-                <Button
-                  onClick={() => updateDenunciaPrioridade(selectedDenuncia.id || selectedDenuncia.idPublico, 'baixa')}
-                  disabled={selectedDenuncia.prioridade === 'baixa'}
-                  size="sm"
-                  variant="outline"
-                  className="text-green-600 border-green-200 hover:bg-green-50"
-                >
-                  Prioridade Baixa
-                </Button>
+              {/* Ações de Prioridade */}
+              <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl border border-red-200">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="p-2 bg-red-500 rounded-lg">
+                    <AlertTriangle size={20} className="text-white" />
+                  </div>
+                  <h4 className="font-semibold text-red-900">Alterar Prioridade</h4>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.id, 'urgente')}
+                    disabled={selectedDenuncia.prioridade === 'urgente'}
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    <AlertTriangle size={16} className="mr-2" />
+                    Urgente
+                  </Button>
+                  <Button
+                    onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.id, 'alta')}
+                    disabled={selectedDenuncia.prioridade === 'alta'}
+                    size="sm"
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    <AlertTriangle size={16} className="mr-2" />
+                    Alta
+                  </Button>
+                  <Button
+                    onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.id, 'media')}
+                    disabled={selectedDenuncia.prioridade === 'media'}
+                    size="sm"
+                    className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                  >
+                    <AlertTriangle size={16} className="mr-2" />
+                    Média
+                  </Button>
+                  <Button
+                    onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.id, 'baixa')}
+                    disabled={selectedDenuncia.prioridade === 'baixa'}
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <AlertTriangle size={16} className="mr-2" />
+                    Baixa
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

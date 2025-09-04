@@ -274,11 +274,8 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
 // PUT /api/denuncias/:id/observacoes - Salvar apenas observações
 router.put('/:id/observacoes', authenticateToken, async (req, res) => {
   try {
-    const { observacoes, adminEmail } = req.body;
-    
-    if (!adminEmail) {
-      return res.status(400).json({ error: 'Email do administrador é obrigatório' });
-    }
+    const { observacoes } = req.body;
+    const adminEmail = req.user.email;
 
     const denuncia = await Denuncia.findById(req.params.id);
     if (!denuncia) {

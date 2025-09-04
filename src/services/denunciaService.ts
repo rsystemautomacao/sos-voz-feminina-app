@@ -3,6 +3,7 @@ import { apiService } from './api';
 // Serviço para gerenciar denúncias reais dos usuários
 export interface Denuncia {
   id: string;
+  _id?: string; // ID do MongoDB
   idPublico: string; // ID no formato data + sequencial
   tipoViolencia: string;
   dataOcorrido: string;
