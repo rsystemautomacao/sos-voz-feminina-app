@@ -12,16 +12,8 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-// Configuração do multer para upload de arquivos
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '../uploads'));
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Configuração do multer para salvar em memória (base64)
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage: storage,
@@ -396,15 +388,20 @@ router.post('/', upload.array('evidencias', 5), async (req, res) => {
     if (req.files && req.files.length > 0) {
       console.log('Processando evidências...');
       for (const file of req.files) {
+        // Converter arquivo para base64
+        const base64Data = file.buffer.toString('base64');
+        const mimeType = file.mimetype;
+        const dataUrl = `data:${mimeType};base64,${base64Data}`;
+        
         const evidencia = {
           id: Date.now().toString() + Math.random().toString(36).substr(2),
           nome: file.originalname,
           tipo: file.mimetype.startsWith('image/') ? 'image' : 'audio',
-          dados: `/uploads/${file.filename}`, // URL do arquivo
+          dados: dataUrl, // Base64 data URL
           tamanho: file.size
         };
         evidencias.push(evidencia);
-        console.log('Evidência processada:', evidencia);
+        console.log('Evidência processada (base64):', { ...evidencia, dados: 'data:...' });
       }
     }
 
