@@ -1,6 +1,6 @@
-# Backend - SOS Voz Feminina
+# Backend - S.O.S Voz Feminina
 
-Backend completo para o sistema SOS Voz Feminina, construído com Node.js, Express e MongoDB Atlas.
+Backend completo para o sistema S.O.S Voz Feminina, construído com Node.js, Express e MongoDB Atlas.
 
 ## 🚀 Tecnologias
 

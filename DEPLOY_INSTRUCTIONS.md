@@ -12,7 +12,7 @@ No painel do Vercel, adicione as seguintes variáveis de ambiente:
 
 ```
 VITE_API_URL=https://sos-voz-feminina-backend.onrender.com/api
-VITE_APP_NAME=SOS Voz Feminina
+VITE_APP_NAME=S.O.S Voz Feminina
 VITE_APP_VERSION=1.0.0
 VITE_DEV_MODE=false
 ```

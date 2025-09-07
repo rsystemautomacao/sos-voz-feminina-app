@@ -1,7 +1,7 @@
 {
   "name": "sos-voz-feminina-backend",
   "version": "1.0.0",
-  "description": "Backend para o sistema SOS Voz Feminina",
+  "description": "Backend para o sistema S.O.S Voz Feminina",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -36,6 +36,6 @@
     "api",
     "sos-voz-feminina"
   ],
-  "author": "SOS Voz Feminina Team",
+  "author": "S.O.S Voz Feminina Team",
   "license": "MIT"
 }

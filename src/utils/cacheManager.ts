@@ -1,4 +1,4 @@
-// Cache Manager para SOS Voz Feminina
+// Cache Manager para S.O.S Voz Feminina
 // Garante que o app sempre carregue a versão mais recente
 
 export class CacheManager {

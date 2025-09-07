@@ -104,7 +104,7 @@ const AdminNavigation = () => {
                 <Shield className="text-primary-foreground" size={20} />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-primary">SOS Voz Feminina</h1>
+                <h1 className="text-lg font-bold text-primary">S.O.S Voz Feminina</h1>
                 <p className="text-xs text-muted-foreground">Painel Administrativo</p>
               </div>
             </div>

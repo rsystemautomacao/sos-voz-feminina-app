@@ -244,7 +244,7 @@ const Sobre = () => {
             <Shield className="text-primary-foreground" size={40} />
           </div>
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Sobre o SOS Voz Feminina
+            Sobre o S.O.S Voz Feminina
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Uma plataforma segura e anônima para denunciar violência contra mulheres
@@ -261,7 +261,7 @@ const Sobre = () => {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground leading-relaxed">
-              O SOS Voz Feminina nasceu da necessidade de criar um espaço seguro e confidencial 
+              O S.O.S Voz Feminina nasceu da necessidade de criar um espaço seguro e confidencial 
               para que mulheres possam denunciar situações de violência sem medo de retaliação. 
               Nossa missão é empoderar mulheres através da tecnologia, oferecendo uma ferramenta 
               que garante anonimato total e facilita o processo de denúncia.

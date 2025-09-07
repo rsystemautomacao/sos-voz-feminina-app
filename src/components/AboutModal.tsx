@@ -23,7 +23,7 @@ const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Info className="text-primary" size={18} />
-            <span>Sobre o SOS Voz Feminina</span>
+            <span>Sobre o S.O.S Voz Feminina</span>
           </DialogTitle>
         </DialogHeader>
 

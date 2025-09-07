@@ -32,11 +32,11 @@ const Navigation = () => {
               <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-soft overflow-hidden">
                 <img 
                   src="/logo-sos-voz-feminina.png" 
-                  alt="SOS Voz Feminina" 
+                  alt="S.O.S Voz Feminina" 
                   className="w-10 h-10 object-contain"
                 />
               </div>
-              <span className="font-bold text-xl text-primary">SOS Voz Feminina</span>
+              <span className="font-bold text-xl text-primary">S.O.S Voz Feminina</span>
             </Link>
 
             {/* Desktop Navigation */}

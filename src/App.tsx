@@ -5,9 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import UpdateNotification from "@/components/UpdateNotification";
 import InstallPWA from "@/components/InstallPWA";
+import { LGPDModal } from "@/components/LGPDModal";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SuperAdminRoute from "@/components/SuperAdminRoute";
 import useAppUpdate from "@/hooks/useAppUpdate";
+import { useLGPD } from "@/hooks/useLGPD";
 import Home from "./pages/Home";
 import Denuncia from "./pages/Denuncia";
 import Educativo from "./pages/Educativo";
@@ -25,6 +27,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { showUpdatePrompt, handleUpdate, dismissUpdate } = useAppUpdate();
+  const { showLGPD, acceptLGPD } = useLGPD();
 
   return (
     <div className="min-h-screen bg-background">
@@ -65,6 +68,12 @@ const AppContent = () => {
         />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      
+      {/* Modal LGPD */}
+      <LGPDModal 
+        isOpen={showLGPD} 
+        onAccept={acceptLGPD} 
+      />
       
       {/* Notificação de atualização */}
       <UpdateNotification

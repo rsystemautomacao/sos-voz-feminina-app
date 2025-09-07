@@ -218,6 +218,15 @@ const Denuncia = () => {
       return;
     }
 
+    if (!denunciaData.dataOcorrido) {
+      toast({
+        title: "Campo obrigatório",
+        description: "Por favor, informe a data em que ocorreu a situação.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -410,7 +419,7 @@ const Denuncia = () => {
                   <div className="relative">
                 <Textarea
                   id="relato"
-                  placeholder="Conte o que aconteceu... Você pode incluir detalhes como data, local, pessoas envolvidas, testemunhas, etc. Lembre-se: quanto mais informações, melhor poderemos ajudar."
+                  placeholder="Descreva a situação que você vivenciou..."
                       value={denunciaData.relato}
                       onChange={(e) => setDenunciaData(prev => ({ ...prev, relato: e.target.value }))}
                       className="min-h-[180px] resize-none bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-200 hover:border-purple-400 focus:border-purple-500 transition-all duration-300 rounded-xl p-4 text-base"

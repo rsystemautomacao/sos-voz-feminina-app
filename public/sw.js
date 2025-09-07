@@ -1,4 +1,4 @@
-// Service Worker for SOS Voz Feminina PWA
+// Service Worker for S.O.S Voz Feminina PWA
 const CACHE_NAME = 'sos-voz-feminina-v1.0.3';
 const urlsToCache = [
   '/',

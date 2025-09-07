@@ -6,7 +6,7 @@ import { CacheManager } from './utils/cacheManager'
 // Função de inicialização do app
 const initializeApp = async () => {
   try {
-    console.log('🚀 Iniciando SOS Voz Feminina...');
+    console.log('🚀 Iniciando S.O.S Voz Feminina...');
     
     // Limpeza automática de cache ao abrir o app
     await CacheManager.checkAndClearCache();

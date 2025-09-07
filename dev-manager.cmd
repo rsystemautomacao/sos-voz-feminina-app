@@ -1,12 +1,12 @@
 @echo off
 chcp 65001 >nul
-title SOS Voz Feminina - Gerenciador de Desenvolvimento
+title S.O.S Voz Feminina - Gerenciador de Desenvolvimento
 
 :menu
 cls
 echo.
 echo ╔══════════════════════════════════════════════════════════════╗
-echo ║                SOS Voz Feminina - Dev Manager                ║
+echo ║                S.O.S Voz Feminina - Dev Manager                ║
 echo ╠══════════════════════════════════════════════════════════════╣
 echo ║                                                              ║
 echo ║  [1] 🚀 Iniciar Tudo (Backend + Frontend)                   ║
@@ -209,7 +209,7 @@ echo ╔════════════════════════
 echo ║                    👋 ATÉ LOGO!                             ║
 echo ╚══════════════════════════════════════════════════════════════╝
 echo.
-echo Obrigado por usar o SOS Voz Feminina Dev Manager!
+echo Obrigado por usar o S.O.S Voz Feminina Dev Manager!
 echo.
 timeout /t 2 /nobreak >nul
 exit
