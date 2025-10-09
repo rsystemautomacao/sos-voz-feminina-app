@@ -427,34 +427,34 @@ const Admin = () => {
               <div className="flex gap-3">
                 <div className="flex flex-col">
                   <label className="text-sm font-medium text-gray-700 mb-2">Status</label>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-40 h-12 border-2 border-gray-200 focus:border-blue-400 rounded-xl shadow-sm">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todos</SelectItem>
-                      <SelectItem value="pendente">Pendentes</SelectItem>
-                      <SelectItem value="analisando">Em Análise</SelectItem>
-                      <SelectItem value="resolvido">Resolvidas</SelectItem>
-                      <SelectItem value="arquivado">Arquivadas</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="pendente">Pendentes</SelectItem>
+                    <SelectItem value="analisando">Em Análise</SelectItem>
+                    <SelectItem value="resolvido">Resolvidas</SelectItem>
+                    <SelectItem value="arquivado">Arquivadas</SelectItem>
+                  </SelectContent>
+                </Select>
                 </div>
 
                 <div className="flex flex-col">
                   <label className="text-sm font-medium text-gray-700 mb-2">Prioridade</label>
-                  <Select value={prioridadeFilter} onValueChange={setPrioridadeFilter}>
+                <Select value={prioridadeFilter} onValueChange={setPrioridadeFilter}>
                     <SelectTrigger className="w-40 h-12 border-2 border-gray-200 focus:border-blue-400 rounded-xl shadow-sm">
-                      <SelectValue placeholder="Prioridade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todas</SelectItem>
-                      <SelectItem value="urgente">Urgente</SelectItem>
-                      <SelectItem value="alta">Alta</SelectItem>
-                      <SelectItem value="media">Média</SelectItem>
-                      <SelectItem value="baixa">Baixa</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <SelectValue placeholder="Prioridade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todas</SelectItem>
+                    <SelectItem value="urgente">Urgente</SelectItem>
+                    <SelectItem value="alta">Alta</SelectItem>
+                    <SelectItem value="media">Média</SelectItem>
+                    <SelectItem value="baixa">Baixa</SelectItem>
+                  </SelectContent>
+                </Select>
                 </div>
               </div>
             </div>
@@ -479,15 +479,15 @@ const Admin = () => {
                         <div className="flex items-center space-x-3">
                           <Badge className={`${getStatusColor(denuncia.status)} px-3 py-1 text-sm font-medium shadow-sm`}>
                             <div className="flex items-center space-x-2">
-                              {getStatusIcon(denuncia.status)}
-                              <span className="capitalize">{denuncia.status}</span>
-                            </div>
-                          </Badge>
-                          {denuncia.prioridade && (
+                            {getStatusIcon(denuncia.status)}
+                            <span className="capitalize">{denuncia.status}</span>
+                          </div>
+                        </Badge>
+                        {denuncia.prioridade && (
                             <Badge className={`${getPrioridadeColor(denuncia.prioridade)} px-3 py-1 text-sm font-medium shadow-sm`}>
-                              <span className="capitalize">{denuncia.prioridade}</span>
-                            </Badge>
-                          )}
+                            <span className="capitalize">{denuncia.prioridade}</span>
+                          </Badge>
+                        )}
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-mono">
@@ -499,15 +499,15 @@ const Admin = () => {
                       {/* Tipo de violência */}
                       <div className="mb-3">
                         <h3 className="font-bold text-xl text-gray-800 capitalize group-hover:text-blue-700 transition-colors">
-                          {denuncia.tipoViolencia.replace('_', ' ')}
-                        </h3>
+                        {denuncia.tipoViolencia.replace('_', ' ')}
+                      </h3>
                       </div>
                       
                       {/* Relato */}
                       <div className="mb-4">
                         <p className="text-gray-600 line-clamp-2 leading-relaxed">
-                          {denuncia.relato}
-                        </p>
+                        {denuncia.relato}
+                      </p>
                       </div>
                       
                       {/* Metadados */}
@@ -515,7 +515,7 @@ const Admin = () => {
                         <div className="flex items-center space-x-2 text-gray-500">
                           <div className="p-1 bg-blue-100 rounded-full">
                             <Calendar size={14} className="text-blue-600" />
-                          </div>
+                        </div>
                           <span className="font-medium">{formatDate(denuncia.dataCriacao)}</span>
                         </div>
                         {denuncia.localizacao?.cidade && (
@@ -545,7 +545,7 @@ const Admin = () => {
                         className="group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors"
                       >
                         <Eye size={18} />
-                      </Button>
+                    </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -609,8 +609,8 @@ const Admin = () => {
                     <h4 className="font-semibold text-blue-900">Tipo de Violência</h4>
                   </div>
                   <p className="text-blue-800 capitalize font-medium">{selectedDenuncia.tipoViolencia.replace('_', ' ')}</p>
-                </div>
-                
+              </div>
+              
                 <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border border-green-200">
                   <div className="flex items-center space-x-3 mb-3">
                     <div className="p-2 bg-green-500 rounded-lg">
@@ -659,14 +659,14 @@ const Admin = () => {
                     <h4 className="font-semibold text-purple-900">Status</h4>
                   </div>
                   <Badge className={`${getStatusColor(selectedDenuncia.status)} text-sm px-3 py-1`}>
-                    <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2">
                       {getStatusIcon(selectedDenuncia.status)}
                       <span className="capitalize font-medium">{selectedDenuncia.status}</span>
                     </div>
                   </Badge>
-                </div>
+              </div>
 
-                {selectedDenuncia.prioridade && (
+              {selectedDenuncia.prioridade && (
                   <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl border border-red-200">
                     <div className="flex items-center space-x-3 mb-3">
                       <div className="p-2 bg-red-500 rounded-lg">
@@ -676,9 +676,9 @@ const Admin = () => {
                     </div>
                     <Badge className={`${getPrioridadeColor(selectedDenuncia.prioridade)} text-sm px-3 py-1`}>
                       <span className="capitalize font-medium">{selectedDenuncia.prioridade}</span>
-                    </Badge>
-                  </div>
-                )}
+                  </Badge>
+                </div>
+              )}
               </div>
 
               {selectedDenuncia.evidencias && selectedDenuncia.evidencias.length > 0 && (
@@ -698,12 +698,12 @@ const Admin = () => {
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center space-x-3">
                             <div className={`p-2 rounded-lg ${evidencia.tipo === 'image' ? 'bg-blue-100' : 'bg-green-100'}`}>
-                              {evidencia.tipo === 'image' ? (
+                            {evidencia.tipo === 'image' ? (
                                 <Image className="text-blue-600" size={18} />
-                              ) : (
+                            ) : (
                                 <Volume2 className="text-green-600" size={18} />
-                              )}
-                            </div>
+                            )}
+                          </div>
                             <div>
                               <span className="font-medium text-gray-900 text-sm">{evidencia.nome}</span>
                               <p className="text-xs text-gray-500">{formatFileSize(evidencia.tamanho)}</p>
@@ -727,7 +727,7 @@ const Admin = () => {
                                   ? `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${evidencia.dados}`
                                   : evidencia.dados
                                 } 
-                                alt={evidencia.nome}
+                              alt={evidencia.nome}
                                 className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
                                 onError={(e) => {
                                   console.error('Erro ao carregar imagem:', evidencia.dados);
@@ -790,8 +790,8 @@ const Admin = () => {
                   </div>
                   <div className="bg-white p-4 rounded-lg border border-yellow-200">
                     <p className="text-yellow-800 whitespace-pre-wrap leading-relaxed">
-                      {selectedDenuncia.observacoes}
-                    </p>
+                    {selectedDenuncia.observacoes}
+                  </p>
                   </div>
                 </div>
               )}
@@ -831,33 +831,33 @@ const Admin = () => {
                   <h4 className="font-semibold text-purple-900">Alterar Status</h4>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <Button
+                <Button
                     onClick={() => updateDenunciaStatus(selectedDenuncia._id || selectedDenuncia.id, 'analisando')}
-                    disabled={selectedDenuncia.status === 'analisando'}
-                    size="sm"
+                  disabled={selectedDenuncia.status === 'analisando'}
+                  size="sm"
                     className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
+                >
                     <Activity size={16} className="mr-2" />
                     Em Análise
-                  </Button>
-                  <Button
+                </Button>
+                <Button
                     onClick={() => updateDenunciaStatus(selectedDenuncia._id || selectedDenuncia.id, 'resolvido')}
-                    disabled={selectedDenuncia.status === 'resolvido'}
-                    size="sm"
+                  disabled={selectedDenuncia.status === 'resolvido'}
+                  size="sm"
                     className="bg-green-600 hover:bg-green-700 text-white"
-                  >
+                >
                     <CheckCircle size={16} className="mr-2" />
                     Resolvida
-                  </Button>
-                  <Button
+                </Button>
+                <Button
                     onClick={() => updateDenunciaStatus(selectedDenuncia._id || selectedDenuncia.id, 'arquivado')}
-                    disabled={selectedDenuncia.status === 'arquivado'}
-                    size="sm"
+                  disabled={selectedDenuncia.status === 'arquivado'}
+                  size="sm"
                     className="bg-gray-600 hover:bg-gray-700 text-white"
-                  >
+                >
                     <Archive size={16} className="mr-2" />
-                    Arquivar
-                  </Button>
+                  Arquivar
+                </Button>
                 </div>
               </div>
 
@@ -870,42 +870,42 @@ const Admin = () => {
                   <h4 className="font-semibold text-red-900">Alterar Prioridade</h4>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <Button
+                <Button
                     onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.id, 'urgente')}
-                    disabled={selectedDenuncia.prioridade === 'urgente'}
-                    size="sm"
+                  disabled={selectedDenuncia.prioridade === 'urgente'}
+                  size="sm"
                     className="bg-red-600 hover:bg-red-700 text-white"
-                  >
+                >
                     <AlertTriangle size={16} className="mr-2" />
                     Urgente
-                  </Button>
-                  <Button
+                </Button>
+                <Button
                     onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.id, 'alta')}
-                    disabled={selectedDenuncia.prioridade === 'alta'}
-                    size="sm"
+                  disabled={selectedDenuncia.prioridade === 'alta'}
+                  size="sm"
                     className="bg-orange-600 hover:bg-orange-700 text-white"
-                  >
+                >
                     <AlertTriangle size={16} className="mr-2" />
                     Alta
-                  </Button>
-                  <Button
+                </Button>
+                <Button
                     onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.id, 'media')}
-                    disabled={selectedDenuncia.prioridade === 'media'}
-                    size="sm"
+                  disabled={selectedDenuncia.prioridade === 'media'}
+                  size="sm"
                     className="bg-yellow-600 hover:bg-yellow-700 text-white"
-                  >
+                >
                     <AlertTriangle size={16} className="mr-2" />
                     Média
-                  </Button>
-                  <Button
+                </Button>
+                <Button
                     onClick={() => updateDenunciaPrioridade(selectedDenuncia._id || selectedDenuncia.id, 'baixa')}
-                    disabled={selectedDenuncia.prioridade === 'baixa'}
-                    size="sm"
+                  disabled={selectedDenuncia.prioridade === 'baixa'}
+                  size="sm"
                     className="bg-green-600 hover:bg-green-700 text-white"
-                  >
+                >
                     <AlertTriangle size={16} className="mr-2" />
                     Baixa
-                  </Button>
+                </Button>
                 </div>
               </div>
             </CardContent>

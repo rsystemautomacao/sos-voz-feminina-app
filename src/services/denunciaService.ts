@@ -181,8 +181,8 @@ class DenunciaService {
         porStatus: { pendente: 0, analisando: 0, resolvido: 0, arquivado: 0 },
         porTipo: {},
         porPrioridade: { baixa: 0, media: 0, alta: 0, urgente: 0 },
-        recentes: 0
-      };
+      recentes: 0
+    };
     }
   }
 

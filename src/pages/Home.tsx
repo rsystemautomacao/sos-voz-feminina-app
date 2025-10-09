@@ -38,12 +38,12 @@ const Home = () => {
               {/* Logo com efeito especial */}
               <div className="relative mb-8">
                 <div className="w-40 h-40 rounded-full flex items-center justify-center mx-auto shadow-2xl overflow-hidden bg-gradient-to-br from-purple-100 to-pink-100 border-4 border-white">
-                  <img 
-                    src="/logo-sos-voz-feminina.png" 
+              <img 
+                src="/logo-sos-voz-feminina.png" 
                     alt="S.O.S Voz Feminina" 
                     className="w-36 h-36 object-contain"
-                  />
-                </div>
+              />
+            </div>
                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
                   <Heart className="text-white" size={16} />
                 </div>
@@ -52,7 +52,7 @@ const Home = () => {
               {/* Título principal */}
               <h1 className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 mb-6 leading-tight">
                 S.O.S Voz Feminina
-              </h1>
+            </h1>
               
               {/* Subtítulo */}
               <p className="text-2xl text-gray-700 max-w-4xl mx-auto leading-relaxed font-medium mb-8">
@@ -251,11 +251,11 @@ const Home = () => {
                         <div>
                           <p className="font-semibold text-gray-800">Acompanhe</p>
                           <p className="text-sm text-gray-600">Consulte o status quando quiser, de forma anônima</p>
-                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </CardContent>
+              </Card>
               </div>
 
               {/* Contatos de Emergência */}
@@ -268,7 +268,7 @@ const Home = () => {
                     </div>
                     <CardTitle className="text-2xl font-bold text-red-800">
                       Contatos de Emergência
-                    </CardTitle>
+                  </CardTitle>
                   </div>
                   <CardDescription className="text-red-600 text-lg font-medium">
                     Em caso de emergência, ligue imediatamente
