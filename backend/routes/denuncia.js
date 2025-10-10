@@ -345,10 +345,35 @@ router.post('/', upload.array('evidencias', 5), async (req, res) => {
     console.log('=== INÍCIO DA CRIAÇÃO DE DENÚNCIA ===');
     console.log('Body recebido:', req.body);
     console.log('Files recebidos:', req.files);
+    console.log('Headers:', req.headers);
+    console.log('User-Agent:', req.get('User-Agent'));
     
     const { relato, tipoViolencia, dataOcorrido } = req.body;
     
     console.log('Dados extraídos:', { relato, tipoViolencia, dataOcorrido });
+    console.log('Tipo de dataOcorrido:', typeof dataOcorrido);
+    console.log('Valor de dataOcorrido:', dataOcorrido);
+    
+    // Validar data obrigatória
+    if (!dataOcorrido || dataOcorrido.trim() === '') {
+      console.log('❌ ERRO: Campo dataOcorrido está vazio');
+      return res.status(400).json({ 
+        error: 'Campo dataOcorrido é obrigatório',
+        details: 'Por favor, informe a data em que ocorreu a situação.'
+      });
+    }
+    
+    // Validar formato da data (aceita DD/MM/YYYY ou YYYY-MM-DD)
+    const dateRegex = /^(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})$/;
+    if (!dateRegex.test(dataOcorrido)) {
+      console.log('❌ ERRO: Formato de data inválido:', dataOcorrido);
+      return res.status(400).json({ 
+        error: 'Formato de data inválido',
+        details: 'Use o formato DD/MM/YYYY (ex: 25/09/2025) ou YYYY-MM-DD (ex: 2025-09-25).'
+      });
+    }
+    
+    console.log('✅ Data validada com sucesso:', dataOcorrido);
     
     // Processar localização - pode vir como JSON string, objeto ou campos separados
     let localizacao = {};

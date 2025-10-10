@@ -361,10 +361,27 @@ const Denuncia = () => {
                       type="date"
                       id="dataOcorrido"
                       value={denunciaData.dataOcorrido}
-                      onChange={(e) => setDenunciaData(prev => ({ ...prev, dataOcorrido: e.target.value }))}
+                      onChange={(e) => {
+                        // Converter formato americano (YYYY-MM-DD) para brasileiro (DD/MM/YYYY)
+                        const dateValue = e.target.value;
+                        if (dateValue) {
+                          // Se veio do mobile (formato YYYY-MM-DD), converter para DD/MM/YYYY
+                          const [year, month, day] = dateValue.split('-');
+                          const brazilianDate = `${day}/${month}/${year}`;
+                          setDenunciaData(prev => ({ ...prev, dataOcorrido: brazilianDate }));
+                        } else {
+                          setDenunciaData(prev => ({ ...prev, dataOcorrido: '' }));
+                        }
+                      }}
                       className="h-12 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 hover:border-blue-400 focus:border-blue-500 transition-all duration-300 rounded-xl pl-4"
                     />
                   </div>
+                  {/* Mostrar data formatada para o usuário */}
+                  {denunciaData.dataOcorrido && (
+                    <div className="text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                      📅 Data selecionada: {denunciaData.dataOcorrido}
+                    </div>
+                  )}
                 </div>
 
                 {/* Localização */}
