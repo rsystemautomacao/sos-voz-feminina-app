@@ -29,6 +29,7 @@ app.use(helmet());
 const allowedOrigins = [
   'http://localhost:8080',
   'http://localhost:5173',
+  'https://localhost',  // Para Capacitor mobile
   'https://sos-voz-feminina.vercel.app'
 ];
 

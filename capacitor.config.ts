@@ -10,7 +10,7 @@ const config: CapacitorConfig = {
     iosScheme: 'https',
     allowNavigation: [
       'sos-voz-feminina.vercel.app',
-      'api-sos-voz-feminina.onrender.com',
+      'sos-voz-feminina-backend.onrender.com',
       'localhost:5173',
       'localhost:3000'
     ]

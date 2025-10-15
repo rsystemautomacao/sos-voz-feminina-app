@@ -1,4 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// Detectar se está rodando no mobile (Capacitor)
+const isMobile = typeof window !== 'undefined' && window.location.protocol === 'https:';
+const API_BASE_URL = isMobile 
+  ? 'https://sos-voz-feminina-backend.onrender.com/api'  // Mobile
+  : (import.meta.env.VITE_API_URL || 'http://localhost:3000/api'); // Web
 
 class ApiService {
   constructor() {
