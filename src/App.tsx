@@ -21,6 +21,8 @@ import AdminConfiguracoes from "./pages/AdminConfiguracoes";
 import AdminEstatisticas from "./pages/AdminEstatisticas";
 import AdminRegister from "./pages/AdminRegister";
 import AdminResetPassword from "./pages/AdminResetPassword";
+import Privacidade from "./pages/Privacidade";
+import Termos from "./pages/Termos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +39,8 @@ const AppContent = () => {
         <Route path="/educativo" element={<Educativo />} />
         <Route path="/contatos" element={<Contatos />} />
         <Route path="/sobre" element={<Sobre />} />
+        <Route path="/privacidade" element={<Privacidade />} />
+        <Route path="/termos" element={<Termos />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin/register" element={<AdminRegister />} />
         <Route path="/admin/reset-password" element={<AdminResetPassword />} />
