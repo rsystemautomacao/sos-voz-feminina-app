@@ -28,6 +28,7 @@ const Denuncia = () => {
     localizacao: {},
     evidencias: []
   });
+  const [dataDisplay, setDataDisplay] = useState<string>(""); // Para mostrar data formatada
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -248,6 +249,7 @@ const Denuncia = () => {
         localizacao: {},
         evidencias: []
       });
+      setDataDisplay(""); // Limpar também a data de exibição
       
       // Limpar arquivos de mídia
       mediaFiles.forEach(file => URL.revokeObjectURL(file.url));
@@ -362,24 +364,27 @@ const Denuncia = () => {
                       id="dataOcorrido"
                       value={denunciaData.dataOcorrido}
                       onChange={(e) => {
-                        // Converter formato americano (YYYY-MM-DD) para brasileiro (DD/MM/YYYY)
-                        const dateValue = e.target.value;
+                        const dateValue = e.target.value; // Formato YYYY-MM-DD (padrão HTML5)
                         if (dateValue) {
-                          // Se veio do mobile (formato YYYY-MM-DD), converter para DD/MM/YYYY
+                          // Manter formato americano no estado (para compatibilidade com HTML5)
+                          setDenunciaData(prev => ({ ...prev, dataOcorrido: dateValue }));
+                          
+                          // Converter para formato brasileiro para exibição
                           const [year, month, day] = dateValue.split('-');
                           const brazilianDate = `${day}/${month}/${year}`;
-                          setDenunciaData(prev => ({ ...prev, dataOcorrido: brazilianDate }));
+                          setDataDisplay(brazilianDate);
                         } else {
                           setDenunciaData(prev => ({ ...prev, dataOcorrido: '' }));
+                          setDataDisplay('');
                         }
                       }}
                       className="h-12 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 hover:border-blue-400 focus:border-blue-500 transition-all duration-300 rounded-xl pl-4"
                     />
                   </div>
                   {/* Mostrar data formatada para o usuário */}
-                  {denunciaData.dataOcorrido && (
+                  {dataDisplay && (
                     <div className="text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
-                      📅 Data selecionada: {denunciaData.dataOcorrido}
+                      📅 Data selecionada: {dataDisplay}
                     </div>
                   )}
                 </div>

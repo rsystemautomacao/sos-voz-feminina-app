@@ -367,10 +367,19 @@ router.post('/', upload.array('evidencias', 5), async (req, res) => {
     const dateRegex = /^(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})$/;
     if (!dateRegex.test(dataOcorrido)) {
       console.log('❌ ERRO: Formato de data inválido:', dataOcorrido);
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Formato de data inválido',
         details: 'Use o formato DD/MM/YYYY (ex: 25/09/2025) ou YYYY-MM-DD (ex: 2025-09-25).'
       });
+    }
+    
+    // Converter formato americano para brasileiro se necessário
+    let dataFormatada = dataOcorrido;
+    if (dataOcorrido.includes('-')) {
+      // Formato americano (YYYY-MM-DD) -> brasileiro (DD/MM/YYYY)
+      const [year, month, day] = dataOcorrido.split('-');
+      dataFormatada = `${day}/${month}/${year}`;
+      console.log('🔄 Data convertida de americano para brasileiro:', dataOcorrido, '->', dataFormatada);
     }
     
     console.log('✅ Data validada com sucesso:', dataOcorrido);
@@ -434,7 +443,7 @@ router.post('/', upload.array('evidencias', 5), async (req, res) => {
     const denuncia = new Denuncia({
       idPublico,
       tipoViolencia,
-      dataOcorrido,
+      dataOcorrido: dataFormatada, // Usar data formatada (brasileiro)
       localizacao,
       relato,
       prioridade: calcularPrioridade(tipoViolencia),
