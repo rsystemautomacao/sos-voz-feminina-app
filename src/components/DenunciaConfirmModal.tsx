@@ -2,6 +2,7 @@ import { CheckCircle, Copy, FileText, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { Clipboard } from '@capacitor/clipboard';
 
 interface DenunciaConfirmModalProps {
   isOpen: boolean;
@@ -15,7 +16,19 @@ const DenunciaConfirmModal = ({ isOpen, onClose, denunciaId, tipoViolencia }: De
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(denunciaId);
+      // Detectar se está no mobile (Capacitor)
+      const isMobile = typeof window !== 'undefined' && window.location.protocol === 'https:';
+      
+      if (isMobile) {
+        // Usar Capacitor Clipboard no mobile
+        await Clipboard.write({
+          string: denunciaId
+        });
+      } else {
+        // Usar navigator.clipboard no web
+        await navigator.clipboard.writeText(denunciaId);
+      }
+      
       toast({
         title: "ID copiado!",
         description: "O número da denúncia foi copiado para a área de transferência.",

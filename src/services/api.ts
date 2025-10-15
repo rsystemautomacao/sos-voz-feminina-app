@@ -1,7 +1,9 @@
 // Detectar se está rodando no mobile (Capacitor)
 const isMobile = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+// Mobile usa backend de produção, Web usa localhost
 const API_BASE_URL = isMobile 
-  ? 'https://sos-voz-feminina-backend.onrender.com/api'  // Mobile
+  ? 'https://sos-voz-feminina-backend.onrender.com/api'  // Mobile - backend de produção
   : (import.meta.env.VITE_API_URL || 'http://localhost:3000/api'); // Web
 
 class ApiService {

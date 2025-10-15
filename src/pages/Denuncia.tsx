@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { AlertTriangle, Camera, Mic, Send, Shield, X, Play, Pause, Upload, FileAudio, FileImage, Calendar, MapPin, FileText, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +22,7 @@ interface MediaFile {
 }
 
 const Denuncia = () => {
+  const navigate = useNavigate();
   const [denunciaData, setDenunciaData] = useState<DenunciaInput>({
     relato: "",
     tipoViolencia: "",
@@ -270,6 +272,8 @@ const Denuncia = () => {
   const handleCloseConfirmModal = () => {
     setShowConfirmModal(false);
     setDenunciaConfirmada(null);
+    // Navegar automaticamente para a página inicial após fechar o modal
+    navigate("/");
   };
 
   return (

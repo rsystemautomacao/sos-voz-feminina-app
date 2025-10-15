@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { Clipboard } from '@capacitor/clipboard';
 import { denunciaService, Denuncia } from "@/services/denunciaService";
 
 const ConsultaStatus = () => {
@@ -51,7 +52,19 @@ const ConsultaStatus = () => {
 
   const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      // Detectar se está no mobile (Capacitor)
+      const isMobile = typeof window !== 'undefined' && window.location.protocol === 'https:';
+      
+      if (isMobile) {
+        // Usar Capacitor Clipboard no mobile
+        await Clipboard.write({
+          string: text
+        });
+      } else {
+        // Usar navigator.clipboard no web
+        await navigator.clipboard.writeText(text);
+      }
+      
       toast({
         title: "Copiado!",
         description: "Informação copiada para a área de transferência.",
