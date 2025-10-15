@@ -38,6 +38,9 @@ const Navigation = () => {
 
   return (
     <>
+      {/* Safe area spacer para mobile */}
+      {isMobile && <div className="h-8 bg-card"></div>}
+      
       <nav className="bg-card border-b border-border shadow-soft">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center justify-between h-16 relative">
@@ -50,7 +53,7 @@ const Navigation = () => {
                   className="w-10 h-10 object-contain"
                 />
               </div>
-              <span className={`font-bold text-xl text-primary ${isMobile ? 'truncate' : ''}`}>S.O.S Voz Feminina</span>
+              <span className={`font-bold text-xl text-primary ${isMobile ? 'truncate mobile-logo-text' : ''}`}>S.O.S Voz Feminina</span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -86,16 +89,23 @@ const Navigation = () => {
             <Button
               variant="ghost"
               size="icon"
-              className={`${isMobile ? 'block' : 'hidden'} relative z-50 min-w-[48px] min-h-[48px] p-3 mr-2`}
+              className={`${isMobile ? 'block' : 'hidden'} relative z-50 w-16 h-16 p-4 mr-4 touch-manipulation`}
               onClick={() => setIsOpen(!isOpen)}
+              style={{ 
+                minWidth: '64px', 
+                minHeight: '64px',
+                padding: '16px',
+                marginRight: '16px',
+                zIndex: 9999
+              }}
             >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
+              {isOpen ? <X size={32} /> : <Menu size={32} />}
             </Button>
           </div>
 
           {/* Mobile Navigation */}
           {isOpen && isMobile && (
-            <div className="py-4 border-t border-border relative z-40 bg-card">
+            <div className="py-4 border-t border-border relative z-40 bg-card mobile-nav-dropdown">
               <div className="flex flex-col space-y-2">
                 {navItems.map((item) => {
                   const isActive = location.pathname === item.path;
