@@ -14,7 +14,7 @@ interface AboutModalProps {
 }
 
 const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
-  const appVersion = "1.0.3";
+  const appVersion = "1.2.7";
   const developer = "Richard Spanhol";
 
   return (
@@ -31,9 +31,9 @@ const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
           {/* Descrição do App */}
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Plataforma segura e anônima para denúncias de violência contra mulheres. 
-              Proporcionamos um canal confidencial onde as vítimas podem relatar 
-              situações sem medo de retaliação.
+              Plataforma segura e anônima para escuta e acolhimento de mulheres. 
+              Proporcionamos um canal confidencial onde as vítimas podem compartilhar 
+              seus relatos sem medo de retaliação.
             </p>
           </div>
 

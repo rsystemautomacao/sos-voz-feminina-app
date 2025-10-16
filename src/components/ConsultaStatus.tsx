@@ -20,7 +20,7 @@ const ConsultaStatus = () => {
     if (!denunciaId.trim()) {
       toast({
         title: "Campo obrigatório",
-        description: "Por favor, digite o número da denúncia.",
+        description: "Por favor, digite o número do relato.",
         variant: "destructive",
       });
       return;
@@ -39,10 +39,10 @@ const ConsultaStatus = () => {
         setNotFound(true);
       }
     } catch (error) {
-      console.error('Erro ao buscar denúncia:', error);
+      console.error('Erro ao buscar relato:', error);
       toast({
         title: "Erro na consulta",
-        description: "Não foi possível consultar o status da denúncia.",
+        description: "Não foi possível consultar o status do relato.",
         variant: "destructive",
       });
     } finally {
@@ -101,10 +101,10 @@ const ConsultaStatus = () => {
 
   const getStatusDescription = (status: string) => {
     switch (status) {
-      case 'pendente': return 'Sua denúncia foi recebida e está aguardando análise.';
-      case 'analisando': return 'Sua denúncia está sendo analisada por nossa equipe.';
-      case 'resolvido': return 'Sua denúncia foi analisada e as medidas necessárias foram tomadas.';
-      case 'arquivado': return 'Sua denúncia foi arquivada após análise completa.';
+      case 'pendente': return 'Seu relato foi recebido e está aguardando análise.';
+      case 'analisando': return 'Seu relato está sendo analisado por nossa equipe.';
+      case 'resolvido': return 'Seu relato foi analisado e as medidas necessárias foram tomadas.';
+      case 'arquivado': return 'Seu relato foi arquivado após análise completa.';
       default: return 'Status não disponível.';
     }
   };
@@ -126,10 +126,10 @@ const ConsultaStatus = () => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Search className="text-primary" size={24} />
-            <span>Consultar Status da Denúncia</span>
+            <span>Consultar Status do Relato</span>
           </CardTitle>
           <CardDescription>
-            Digite o número da denúncia para acompanhar o status
+            Digite o número do relato para acompanhar o status
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -162,7 +162,7 @@ const ConsultaStatus = () => {
         <Card className="shadow-soft">
           <CardContent className="p-8 text-center">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Consultando status da denúncia...</p>
+            <p className="text-muted-foreground">Consultando status do relato...</p>
           </CardContent>
         </Card>
       )}
@@ -171,9 +171,9 @@ const ConsultaStatus = () => {
         <Card className="shadow-soft border-red-200 bg-red-50">
           <CardContent className="p-8 text-center">
             <X className="text-red-500 mx-auto mb-4" size={48} />
-            <h3 className="text-lg font-semibold text-red-800 mb-2">Denúncia não encontrada</h3>
+            <h3 className="text-lg font-semibold text-red-800 mb-2">Relato não encontrado</h3>
             <p className="text-red-600">
-              Não foi possível encontrar uma denúncia com o número informado. 
+              Não foi possível encontrar um relato com o número informado. 
               Verifique se o número está correto e tente novamente.
             </p>
           </CardContent>
@@ -188,7 +188,7 @@ const ConsultaStatus = () => {
                 <FileText className="text-green-600" size={24} />
                 <div>
                   <CardTitle className="text-green-800">
-                    Denúncia #{denuncia.idPublico}
+                    Relato #{denuncia.idPublico}
                   </CardTitle>
                   <CardDescription className="text-green-600">
                     Status atualizado em {formatDate(denuncia.dataCriacao)}
@@ -198,7 +198,7 @@ const ConsultaStatus = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => copyToClipboard(`Denúncia #${denuncia.idPublico} - Status: ${denuncia.status}`)}
+                onClick={() => copyToClipboard(`Relato #${denuncia.idPublico} - Status: ${denuncia.status}`)}
                 className="flex items-center space-x-2"
               >
                 <Copy size={16} />
@@ -223,7 +223,7 @@ const ConsultaStatus = () => {
               </p>
             </div>
 
-            {/* Informações da Denúncia */}
+            {/* Informações do Relato */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <h4 className="font-semibold text-green-800">Tipo de Violência</h4>
@@ -272,7 +272,7 @@ const ConsultaStatus = () => {
               <div className="space-y-2">
                 <h4 className="font-semibold text-green-800">Evidências Anexadas</h4>
                 <p className="text-sm text-green-700">
-                  {denuncia.evidencias.length} arquivo(s) foram anexados à denúncia.
+                  {denuncia.evidencias.length} arquivo(s) foram anexados ao relato.
                 </p>
               </div>
             )}
@@ -281,7 +281,7 @@ const ConsultaStatus = () => {
             <div className="bg-white/50 rounded-lg p-4 border border-green-200">
               <h4 className="font-semibold text-green-800 mb-2">Informações Importantes</h4>
               <div className="space-y-2 text-sm text-green-700">
-                <p>• Sua denúncia é tratada com total confidencialidade</p>
+                <p>• Seu relato é tratado com total confidencialidade</p>
                 <p>• O status é atualizado conforme o progresso da análise</p>
                 <p>• Em caso de emergência, procure ajuda imediata</p>
                 <p>• Guarde este número para futuras consultas</p>

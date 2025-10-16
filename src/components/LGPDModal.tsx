@@ -38,7 +38,7 @@ export const LGPDModal: React.FC<LGPDModalProps> = ({ isOpen, onAccept }) => {
             <div className="grid grid-cols-2 gap-4 text-sm text-blue-700">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="text-green-600" size={16} />
-                <span>Denúncias anônimas</span>
+                <span>Relatos anônimos</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="text-green-600" size={16} />
@@ -88,7 +88,7 @@ export const LGPDModal: React.FC<LGPDModalProps> = ({ isOpen, onAccept }) => {
                 <ul className="space-y-2 text-sm text-gray-700">
                   <li className="flex items-start space-x-2">
                     <CheckCircle className="text-green-600 mt-1" size={16} />
-                    <span><strong>Denúncias anônimas:</strong> Não coletamos informações pessoais identificáveis</span>
+                    <span><strong>Relatos anônimos:</strong> Não coletamos informações pessoais identificáveis</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <CheckCircle className="text-green-600 mt-1" size={16} />
@@ -100,7 +100,7 @@ export const LGPDModal: React.FC<LGPDModalProps> = ({ isOpen, onAccept }) => {
                   </li>
                   <li className="flex items-start space-x-2">
                     <CheckCircle className="text-green-600 mt-1" size={16} />
-                    <span><strong>Finalidade:</strong> Apenas para análise e acompanhamento das denúncias</span>
+                    <span><strong>Finalidade:</strong> Apenas para análise e acompanhamento dos relatos</span>
                   </li>
                 </ul>
               </div>

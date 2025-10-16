@@ -31,7 +31,7 @@ const DenunciaConfirmModal = ({ isOpen, onClose, denunciaId, tipoViolencia }: De
       
       toast({
         title: "ID copiado!",
-        description: "O número da denúncia foi copiado para a área de transferência.",
+        description: "O número do relato foi copiado para a área de transferência.",
       });
     } catch (error) {
       console.error('Erro ao copiar:', error);
@@ -52,18 +52,18 @@ const DenunciaConfirmModal = ({ isOpen, onClose, denunciaId, tipoViolencia }: De
           <div className="w-12 h-12 bg-gradient-green rounded-full flex items-center justify-center mx-auto mb-3">
             <CheckCircle className="text-green-foreground" size={24} />
           </div>
-          <CardTitle className="text-xl text-green-600">Denúncia Registrada!</CardTitle>
+          <CardTitle className="text-xl text-green-600">Relato Registrado!</CardTitle>
           <CardDescription className="text-sm">
-            Sua denúncia foi recebida com sucesso
+            Seu relato foi recebido com sucesso
           </CardDescription>
         </CardHeader>
         
         <CardContent className="px-6 pb-6 space-y-4">
-          {/* ID da Denúncia */}
+          {/* ID do Relato */}
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <FileText className="text-primary" size={16} />
-              <span className="font-semibold text-sm">Número da Denúncia:</span>
+              <span className="font-semibold text-sm">Número do Relato:</span>
             </div>
             <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/20 rounded-lg p-3">
               <div className="text-center">
@@ -90,7 +90,7 @@ const DenunciaConfirmModal = ({ isOpen, onClose, denunciaId, tipoViolencia }: De
               <div className="text-xs">
                 <h4 className="font-semibold text-yellow-800 mb-1">Guarde este número!</h4>
                 <p className="text-yellow-700">
-                  Use para consultar o status na seção "Consultar Denúncia".
+                  Use para consultar o status na seção "Consultar Relato".
                 </p>
               </div>
             </div>
@@ -108,7 +108,7 @@ const DenunciaConfirmModal = ({ isOpen, onClose, denunciaId, tipoViolencia }: De
             <div className="space-y-1 text-xs text-muted-foreground">
               <div className="flex items-start space-x-2">
                 <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></div>
-                <span>Sua denúncia será analisada por nossa equipe</span>
+                <span>Seu relato será analisado por nossa equipe</span>
               </div>
               <div className="flex items-start space-x-2">
                 <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></div>

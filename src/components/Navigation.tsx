@@ -26,7 +26,7 @@ const Navigation = () => {
 
   const navItems = [
     { path: "/", icon: Home, label: "Início" },
-    { path: "/denuncia", icon: FileText, label: "Denúncia" },
+    { path: "/denuncia", icon: FileText, label: "Relatar" },
     { path: "/educativo", icon: BookOpen, label: "Educativo" },
     { path: "/contatos", icon: Phone, label: "Contatos" },
   ];

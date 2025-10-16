@@ -56,7 +56,7 @@ const Home = () => {
               
               {/* Subtítulo */}
               <p className="text-2xl text-gray-700 max-w-4xl mx-auto leading-relaxed font-medium mb-8">
-                Você não está sozinha. Denuncie de forma <span className="text-purple-600 font-bold">100% anônima</span> e segura.
+                Você não está sozinha. Compartilhe seu relato de forma <span className="text-purple-600 font-bold">100% anônima</span> e segura.
               </p>
               
               {/* Badges de confiança */}
@@ -91,7 +91,7 @@ const Home = () => {
               </TabsTrigger>
               <TabsTrigger value="denuncia" className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-orange-500 data-[state=active]:text-white transition-all duration-300">
                 <FileText size={18} />
-                <span className="font-semibold">Denunciar</span>
+                <span className="font-semibold">Relatar</span>
               </TabsTrigger>
               <TabsTrigger value="consulta" className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white transition-all duration-300">
                 <Search size={18} />
@@ -103,16 +103,16 @@ const Home = () => {
             <TabsContent value="inicio" className="space-y-12">
               {/* Cards de Ação Principais */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {/* Card Denúncia - Destaque */}
+                {/* Card Relato - Destaque */}
                 <Card className="relative overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105 border-0 bg-gradient-to-br from-red-50 to-orange-50">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-400/20 to-orange-400/20 rounded-full -translate-y-16 translate-x-16"></div>
                   <CardHeader className="text-center pb-6 relative z-10">
                     <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                       <AlertTriangle className="text-white" size={32} />
                     </div>
-                    <CardTitle className="text-2xl font-bold text-gray-800 mb-2">Fazer Denúncia</CardTitle>
+                    <CardTitle className="text-2xl font-bold text-gray-800 mb-2">Compartilhar Relato</CardTitle>
                     <CardDescription className="text-gray-600 text-base">
-                      Denuncie de forma 100% anônima e segura
+                      Seja ouvida de forma 100% anônima e segura
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="text-center relative z-10">
@@ -121,7 +121,7 @@ const Home = () => {
                       className="w-full h-14 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       <Link to="/denuncia">
-                        <span>Denunciar Agora</span>
+                        <span>Ser Ouvida</span>
                         <ArrowRight size={20} />
                       </Link>
                     </Button>
@@ -137,7 +137,7 @@ const Home = () => {
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-800 mb-2">Consultar Status</CardTitle>
                     <CardDescription className="text-gray-600 text-base">
-                      Acompanhe o status da sua denúncia
+                      Acompanhe o status do seu relato
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="text-center relative z-10">
@@ -235,15 +235,15 @@ const Home = () => {
                       <div className="flex items-start space-x-4">
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">1</div>
                         <div>
-                          <p className="font-semibold text-gray-800">Denuncie</p>
-                          <p className="text-sm text-gray-600">Preencha o formulário anônimo com os detalhes</p>
+                          <p className="font-semibold text-gray-800">Compartilhe</p>
+                          <p className="text-sm text-gray-600">Preencha o formulário anônimo com seu relato</p>
                         </div>
                       </div>
                       <div className="flex items-start space-x-4">
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">2</div>
                         <div>
                           <p className="font-semibold text-gray-800">Receba o ID</p>
-                          <p className="text-sm text-gray-600">Guarde o número da denúncia para acompanhar</p>
+                          <p className="text-sm text-gray-600">Guarde o número do relato para acompanhar</p>
                         </div>
                       </div>
                       <div className="flex items-start space-x-4">
@@ -291,7 +291,7 @@ const Home = () => {
               </Card>
             </TabsContent>
 
-            {/* Tab Denúncia */}
+            {/* Tab Relato */}
             <TabsContent value="denuncia" className="space-y-8">
               <Card className="relative overflow-hidden shadow-2xl border-0 bg-gradient-to-br from-red-50 to-orange-50">
                 <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-red-400/20 to-orange-400/20 rounded-full -translate-y-20 translate-x-20"></div>
@@ -299,10 +299,10 @@ const Home = () => {
                   <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                     <AlertTriangle className="text-white" size={32} />
                   </div>
-                  <CardTitle className="text-3xl font-bold text-gray-800 mb-4">Fazer Denúncia Anônima</CardTitle>
+                  <CardTitle className="text-3xl font-bold text-gray-800 mb-4">Compartilhar Relato Anônimo</CardTitle>
                   <CardDescription className="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Sua denúncia é importante e será tratada com total confidencialidade. 
-                    Você pode incluir fotos, áudios e outros tipos de evidências.
+                    Seu relato é importante e será ouvido com total confidencialidade. 
+                    Você pode incluir fotos, áudios e outras evidências.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center relative z-10">
@@ -313,7 +313,7 @@ const Home = () => {
                   >
                     <Link to="/denuncia">
                       <AlertTriangle size={24} />
-                      <span>Iniciar Denúncia</span>
+                      <span>Ser Ouvida</span>
                     </Link>
                   </Button>
                 </CardContent>

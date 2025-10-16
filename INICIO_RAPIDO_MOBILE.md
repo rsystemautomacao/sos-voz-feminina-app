@@ -1,4 +1,4 @@
-# 🚀 Início Rápido - Transformar em App Mobile
+image.png# 🚀 Início Rápido - Transformar em App Mobile
 
 Este é um guia resumido para começar AGORA. Para detalhes completos, veja `GUIA_PUBLICACAO_APP_STORES.md`.
 

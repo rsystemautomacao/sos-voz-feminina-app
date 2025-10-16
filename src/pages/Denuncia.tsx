@@ -258,9 +258,9 @@ const Denuncia = () => {
       setMediaFiles([]);
       
     } catch (error) {
-      console.error('Erro ao salvar denúncia:', error);
+      console.error('Erro ao salvar relato:', error);
       toast({
-        title: "Erro ao enviar denúncia",
+        title: "Erro ao enviar relato",
         description: "Tente novamente. Se o problema persistir, entre em contato conosco.",
         variant: "destructive",
       });
@@ -287,10 +287,10 @@ const Denuncia = () => {
               <AlertTriangle className="text-emergency-foreground" size={40} />
           </div>
             <h1 className="text-4xl font-bold text-foreground mb-3">
-            Fazer Denúncia Anônima
+            Escuta Anônima
           </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Seu relato é importante e será tratado com total confidencialidade
+            Seu relato é importante e será ouvido com total confidencialidade
           </p>
         </div>
 
@@ -306,7 +306,7 @@ const Denuncia = () => {
                     Garantia de Anonimato Total
                 </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                  Esta denúncia é 100% anônima. Não coletamos dados pessoais, 
+                  Este relato é 100% anônimo. Não coletamos dados pessoais, 
                   endereço IP ou qualquer informação que possa identificá-la. 
                     Você está completamente protegida.
                 </p>
@@ -576,7 +576,7 @@ const Denuncia = () => {
                   ) : (
                       <div className="flex items-center space-x-2">
                       <Send size={20} />
-                        <span>Enviar Denúncia Anônima</span>
+                        <span>Enviar Relato</span>
                       </div>
                   )}
                 </Button>

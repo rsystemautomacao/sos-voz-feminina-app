@@ -26,7 +26,7 @@ const Sobre = () => {
               Painel Administrativo
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Sistema de gerenciamento e monitoramento de denúncias de violência contra mulheres
+              Sistema de gerenciamento e monitoramento de relatos de violência contra mulheres
             </p>
           </div>
 
@@ -37,7 +37,7 @@ const Sobre = () => {
                 <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center mb-4">
                   <FileText className="text-primary-foreground" size={24} />
                 </div>
-                <CardTitle>Gestão de Denúncias</CardTitle>
+                <CardTitle>Gestão de Relatos</CardTitle>
                 <CardDescription>
                   Sistema completo para análise e acompanhamento de casos
                 </CardDescription>
@@ -45,7 +45,7 @@ const Sobre = () => {
               <CardContent className="space-y-3">
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="text-green-500" size={16} />
-                  <span className="text-sm">Visualização de denúncias anônimas</span>
+                  <span className="text-sm">Visualização de relatos anônimos</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="text-green-500" size={16} />
@@ -247,7 +247,7 @@ const Sobre = () => {
             Sobre o S.O.S Voz Feminina
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Uma plataforma segura e anônima para denunciar violência contra mulheres
+            Uma plataforma segura e anônima para escuta e acolhimento de mulheres
           </p>
         </div>
 
@@ -262,9 +262,9 @@ const Sobre = () => {
           <CardContent>
             <p className="text-muted-foreground leading-relaxed">
               O S.O.S Voz Feminina nasceu da necessidade de criar um espaço seguro e confidencial 
-              para que mulheres possam denunciar situações de violência sem medo de retaliação. 
+              para que mulheres possam compartilhar situações de violência sem medo de retaliação. 
               Nossa missão é empoderar mulheres através da tecnologia, oferecendo uma ferramenta 
-              que garante anonimato total e facilita o processo de denúncia.
+              que garante anonimato total e facilita o processo de escuta.
             </p>
           </CardContent>
         </Card>
@@ -333,7 +333,7 @@ const Sobre = () => {
                   <div className="flex items-start space-x-3">
                     <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">2</div>
                     <p className="text-sm text-muted-foreground">
-                      Preencha o formulário de denúncia
+                      Preencha o formulário de relato
                     </p>
                   </div>
                   <div className="flex items-start space-x-3">
@@ -350,7 +350,7 @@ const Sobre = () => {
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
                     <p className="text-sm text-muted-foreground">
-                      Analisa cada denúncia com cuidado
+                      Analisa cada relato com cuidado
                     </p>
                   </div>
                   <div className="flex items-start space-x-3">
@@ -379,7 +379,7 @@ const Sobre = () => {
           <CardContent>
             <p className="text-muted-foreground">
               Para dúvidas sobre o funcionamento da plataforma ou suporte técnico, 
-              entre em contato através dos canais oficiais de denúncia: <strong>Disque 180</strong> 
+              entre em contato através dos canais oficiais de atendimento: <strong>Disque 180</strong> 
               ou <strong>Polícia Militar 190</strong>.
             </p>
           </CardContent>
@@ -446,7 +446,7 @@ const Sobre = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    <strong>Versão:</strong> 1.0.0
+                    <strong>Versão:</strong> 1.2.7
                   </p>
                   <p className="text-sm text-muted-foreground">
                     <strong>Última atualização:</strong> {new Date().toLocaleDateString('pt-BR')}
