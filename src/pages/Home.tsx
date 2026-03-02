@@ -179,6 +179,68 @@ const Home = () => {
                 </Card>
               </div>
 
+              {/* Seção de Vídeos */}
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 mb-2">
+                    Vídeos Informativos
+                  </h2>
+                  <p className="text-gray-600 text-lg">
+                    Conheça mais sobre o projeto e seus direitos
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {/* Vídeo 1 - YouTube ccbE5IGjzdo */}
+                  <Card className="overflow-hidden shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                    <CardContent className="p-0">
+                      <div className="aspect-video">
+                        <iframe
+                          className="w-full h-full"
+                          src="https://www.youtube.com/embed/ccbE5IGjzdo"
+                          title="Vídeo informativo 1"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Vídeo 2 - YouTube e0IVpqnP1p0 */}
+                  <Card className="overflow-hidden shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                    <CardContent className="p-0">
+                      <div className="aspect-video">
+                        <iframe
+                          className="w-full h-full"
+                          src="https://www.youtube.com/embed/e0IVpqnP1p0"
+                          title="Vídeo informativo 2"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Vídeo 3 - pet-equidade.mp4 (local) */}
+                  <Card className="overflow-hidden shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                    <CardContent className="p-0">
+                      <div className="aspect-video">
+                        <video
+                          className="w-full h-full object-cover"
+                          controls
+                          preload="metadata"
+                        >
+                          <source src="/pet-equidade.mp4" type="video/mp4" />
+                          Seu navegador não suporta vídeos HTML5.
+                        </video>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
               {/* Seção de Segurança e Como Funciona */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Segurança */}

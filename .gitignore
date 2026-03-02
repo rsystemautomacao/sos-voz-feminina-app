@@ -36,3 +36,6 @@ ios/App/Pods/
 ios/App/build/
 ios/App/DerivedData/
 *.keystore
+
+# Large video files
+*.mp4
