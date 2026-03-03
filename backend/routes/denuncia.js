@@ -85,17 +85,17 @@ const DenunciaSchema = new mongoose.Schema({
 const Denuncia = mongoose.model('Denuncia', DenunciaSchema);
 
 // Função para gerar ID público
+// Usa timestamp + random para evitar countDocuments() que escaneia toda a coleção
 const generatePublicId = () => {
   const hoje = new Date();
   const dia = hoje.getDate().toString().padStart(2, '0');
   const mes = (hoje.getMonth() + 1).toString().padStart(2, '0');
   const ano = hoje.getFullYear().toString().slice(-2);
-  
-  // Buscar último número sequencial
-  return Denuncia.countDocuments().then(count => {
-    const nextNumber = (count + 1000).toString();
-    return `${dia}${mes}${ano}${nextNumber}`;
-  });
+
+  // últimos 4 dígitos do timestamp (base36) + 4 chars aleatórios — instantâneo, sem query
+  const timestamp = Date.now().toString(36).toUpperCase().slice(-4);
+  const random = Math.random().toString(36).substr(2, 4).toUpperCase();
+  return Promise.resolve(`${dia}${mes}${ano}${timestamp}${random}`);
 };
 
 // Função para calcular prioridade

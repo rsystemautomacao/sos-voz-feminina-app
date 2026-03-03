@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AlertTriangle, Camera, Mic, Send, Shield, X, Play, Pause, Upload, FileAudio, FileImage, Calendar, MapPin, FileText, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { denunciaService, DenunciaInput } from "@/services/denunciaService";
+import apiService from "@/services/api";
 import Navigation from "@/components/Navigation";
 import DenunciaConfirmModal from "@/components/DenunciaConfirmModal";
 
@@ -39,6 +40,15 @@ const Denuncia = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [denunciaConfirmada, setDenunciaConfirmada] = useState<{id: string, tipo: string} | null>(null);
   
+  const [isServerReady, setIsServerReady] = useState(false);
+
+  // Pré-aquecer o servidor ao abrir a página para evitar cold start do Render
+  useEffect(() => {
+    apiService.healthCheck()
+      .then(() => setIsServerReady(true))
+      .catch(() => setIsServerReady(true)); // ignora erro — tenta mesmo assim ao submeter
+  }, []);
+
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -293,6 +303,14 @@ const Denuncia = () => {
             Seu relato é importante e será ouvido com total confidencialidade
           </p>
         </div>
+
+        {/* Indicador de status do servidor (warm-up do Render) */}
+        {!isServerReady && (
+          <div className="mb-4 flex items-center space-x-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl">
+            <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
+            <span>Conectando ao servidor, aguarde um momento...</span>
+          </div>
+        )}
 
         {/* Security Notice */}
           <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 shadow-soft">
