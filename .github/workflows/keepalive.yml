@@ -1,0 +1,26 @@
+name: Keep Backend Alive (Render)
+
+# Faz ping no backend a cada 10 minutos para evitar cold start do Render free tier
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # A cada 10 minutos, 24h por dia
+  workflow_dispatch:           # Permite disparar manualmente pela interface do GitHub
+
+jobs:
+  ping:
+    name: Ping Health Endpoint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Acordar servidor Render
+        run: |
+          echo "🏓 Pingando backend: $(date)"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 60 \
+            https://sos-voz-feminina-backend.onrender.com/api/health)
+          echo "📡 HTTP Status: $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Servidor respondeu normalmente"
+          else
+            echo "⚠️ Servidor retornou status $STATUS (pode estar acordando)"
+          fi
