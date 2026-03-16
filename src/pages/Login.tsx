@@ -85,7 +85,7 @@ const Login = () => {
       
       if (user) {
         // Salvar o token JWT retornado pelo backend
-        const token = user.token || user.accessToken;
+        const token = (user as any).token || (user as any).accessToken;
         if (token) {
           localStorage.setItem("adminToken", token);
           localStorage.setItem("adminLoginTime", new Date().toISOString());
