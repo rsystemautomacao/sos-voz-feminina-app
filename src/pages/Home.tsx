@@ -190,7 +190,7 @@ const Home = () => {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                   {/* Vídeo 1 - YouTube ccbE5IGjzdo */}
                   <Card className="overflow-hidden shadow-xl border-0 bg-white/80 backdrop-blur-sm">
                     <CardContent className="p-0">
@@ -219,22 +219,6 @@ const Home = () => {
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
                         />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Vídeo 3 - pet-equidade.mp4 (local) */}
-                  <Card className="overflow-hidden shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-                    <CardContent className="p-0">
-                      <div className="aspect-video">
-                        <video
-                          className="w-full h-full object-cover"
-                          controls
-                          preload="metadata"
-                        >
-                          <source src="/pet-equidade.mp4" type="video/mp4" />
-                          Seu navegador não suporta vídeos HTML5.
-                        </video>
                       </div>
                     </CardContent>
                   </Card>

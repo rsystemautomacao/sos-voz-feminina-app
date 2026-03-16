@@ -7,29 +7,28 @@ const API_BASE_URL = isMobile
   : (import.meta.env.VITE_API_URL || 'http://localhost:3000/api'); // Web
 
 class ApiService {
+  private baseURL: string;
+
   constructor() {
     this.baseURL = API_BASE_URL;
   }
 
-  // Obter token do localStorage
   private getAuthToken(): string | null {
     return localStorage.getItem('adminToken');
   }
 
-  async request(endpoint, options = {}) {
+  async request(endpoint: string, options: any = {}) {
     const url = `${this.baseURL}${endpoint}`;
     
-    // Obter token de autenticação
     const token = this.getAuthToken();
     
-    const config = {
+    const config: any = {
       headers: {
         ...options.headers,
       },
       ...options,
     };
 
-    // Só adicionar Content-Type se não for FormData
     if (!(options.body instanceof FormData)) {
       config.headers['Content-Type'] = 'application/json';
     }
